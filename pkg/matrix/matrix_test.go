@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
+
+	"github.com/liorokman/raytrace/pkg/tuple"
 )
 
 func TestNewMatrix(t *testing.T) {
@@ -86,46 +88,20 @@ func TestMultiplication(t *testing.T) {
 		[]float64{16, 26, 46, 42},
 	}
 
-	g.Expect(m1.Multiple(m2).Equals(m3)).To(BeTrue())
-	g.Expect(m1.Multiple2(m2).Equals(m3)).To(BeTrue())
+	g.Expect(m1.Multiply(m2).Equals(m3)).To(BeTrue())
 }
 
-func BenchmarkMultGoroutines(b *testing.B) {
+func TestMultiplyTuple(t *testing.T) {
+	g := NewGomegaWithT(t)
+
 	m1 := Matrix{
 		[]float64{1, 2, 3, 4},
-		[]float64{5, 6, 7, 8},
-		[]float64{9, 8, 7, 6},
-		[]float64{5, 4, 3, 2},
+		[]float64{2, 4, 4, 2},
+		[]float64{8, 6, 4, 1},
+		[]float64{0, 0, 0, 1},
 	}
 
-	m2 := Matrix{
-		[]float64{-2, 1, 2, 3},
-		[]float64{3, 2, 1, -1},
-		[]float64{4, 3, 6, 5},
-		[]float64{1, 2, 7, 8},
-	}
-
-	for i := 0; i < b.N; i++ {
-		m1.Multiple(m2)
-	}
-}
-
-func BenchmarkMultSimple(b *testing.B) {
-	m1 := Matrix{
-		[]float64{1, 2, 3, 4},
-		[]float64{5, 6, 7, 8},
-		[]float64{9, 8, 7, 6},
-		[]float64{5, 4, 3, 2},
-	}
-
-	m2 := Matrix{
-		[]float64{-2, 1, 2, 3},
-		[]float64{3, 2, 1, -1},
-		[]float64{4, 3, 6, 5},
-		[]float64{1, 2, 7, 8},
-	}
-
-	for i := 0; i < b.N; i++ {
-		m1.Multiple2(m2)
-	}
+	t1 := tuple.Tuple{1, 2, 3, 1}
+	r1 := tuple.Tuple{18, 24, 33, 1}
+	g.Expect(m1.MultiplyTuple(t1)).To(Equal(r1))
 }

@@ -1,8 +1,7 @@
 package matrix
 
 import (
-	"sync"
-
+	"github.com/liorokman/raytrace/pkg/tuple"
 	"github.com/liorokman/raytrace/pkg/utils"
 )
 
@@ -30,38 +29,27 @@ func (m Matrix) Equals(other Matrix) bool {
 	return true
 }
 
-func (l Matrix) Multiple(r Matrix) Matrix {
-	result := New(len(l), len(r[0]))
-
-	var wg sync.WaitGroup
-	for rw := range l {
-		wg.Add(1)
-		go func(row int) {
-			for i := range l[row] {
-				for j := range r {
-					result[row][i] = result[row][i] + l[row][j]*r[j][i]
-				}
-			}
-			wg.Done()
-		}(rw)
-	}
-	wg.Wait()
-
-	return result
-}
-
-func (l Matrix) Multiple2(r Matrix) Matrix {
+func (l Matrix) Multiply(r Matrix) Matrix {
 	result := New(len(l), len(r[0]))
 
 	for i := range l {
-		for j := range l[i] {
-
-			result[i][j] =
-				l[i][0]*r[0][j] +
-					l[i][1]*r[1][j] +
-					l[i][2]*r[2][j] +
-					l[i][3]*r[3][j]
+		for j := range r[i] {
+			for t := range l[j] {
+				result[i][j] = result[i][j] + l[i][t]*r[t][j]
+			}
 		}
 	}
 	return result
+}
+
+func (l Matrix) MultiplyTuple(r tuple.Tuple) tuple.Tuple {
+
+	right := Matrix{
+		[]float64{r.X()},
+		[]float64{r.Y()},
+		[]float64{r.Z()},
+		[]float64{r.W()},
+	}
+	result := l.Multiply(right)
+	return tuple.Tuple{result[0][0], result[1][0], result[2][0], result[3][0]}
 }

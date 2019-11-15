@@ -12,12 +12,12 @@ import (
 func TestIsPoint(t *testing.T) {
 	g := NewGomegaWithT(t)
 
-	a := Tuple{[...]float64{4.3, -4.2, 3.1, 1.0}}
+	a := Tuple{4.3, -4.2, 3.1, 1.0}
 
-	g.Expect(a.Values[XPos]).To(Equal(4.3))
-	g.Expect(a.Values[YPos]).To(Equal(-4.2))
-	g.Expect(a.Values[ZPos]).To(Equal(3.1))
-	g.Expect(a.Values[WPos]).To(Equal(1.0))
+	g.Expect(a[XPos]).To(Equal(4.3))
+	g.Expect(a[YPos]).To(Equal(-4.2))
+	g.Expect(a[ZPos]).To(Equal(3.1))
+	g.Expect(a[WPos]).To(Equal(1.0))
 	g.Expect(a.IsPoint()).To(BeTrue())
 	g.Expect(a.IsVector()).To(BeFalse())
 }
@@ -25,7 +25,7 @@ func TestIsPoint(t *testing.T) {
 func TestIsVector(t *testing.T) {
 	g := NewGomegaWithT(t)
 
-	a := Tuple{[...]float64{4.3, -4.2, 3.1, 0.0}}
+	a := Tuple{4.3, -4.2, 3.1, 0.0}
 
 	g.Expect(a.X()).To(Equal(4.3))
 	g.Expect(a.Y()).To(Equal(-4.2))
@@ -39,10 +39,10 @@ func TestNewPoint(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	a := NewPoint(4, -4, 3)
-	g.Expect(a.Values[XPos]).To(Equal(4.0))
-	g.Expect(a.Values[YPos]).To(Equal(-4.0))
-	g.Expect(a.Values[ZPos]).To(Equal(3.0))
-	g.Expect(a.Values[WPos]).To(Equal(1.0))
+	g.Expect(a[XPos]).To(Equal(4.0))
+	g.Expect(a[YPos]).To(Equal(-4.0))
+	g.Expect(a[ZPos]).To(Equal(3.0))
+	g.Expect(a[WPos]).To(Equal(1.0))
 	g.Expect(a.IsPoint()).To(BeTrue())
 }
 
@@ -50,10 +50,10 @@ func TestNewVector(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	a := NewVector(4, -4, 3)
-	g.Expect(a.Values[XPos]).To(Equal(4.0))
-	g.Expect(a.Values[YPos]).To(Equal(-4.0))
-	g.Expect(a.Values[ZPos]).To(Equal(3.0))
-	g.Expect(a.Values[WPos]).To(Equal(0.0))
+	g.Expect(a[XPos]).To(Equal(4.0))
+	g.Expect(a[YPos]).To(Equal(-4.0))
+	g.Expect(a[ZPos]).To(Equal(3.0))
+	g.Expect(a[WPos]).To(Equal(0.0))
 	g.Expect(a.IsVector()).To(BeTrue())
 }
 
@@ -102,7 +102,7 @@ func TestSubtractTuple(t *testing.T) {
 func TestNegateTuple(t *testing.T) {
 	g := NewGomegaWithT(t)
 
-	tup := Tuple{[4]float64{1, -2, 3, -4}}.Negate()
+	tup := Tuple{1, -2, 3, -4}.Negate()
 
 	g.Expect(tup.IsPoint()).To(BeFalse())
 	g.Expect(tup.IsVector()).To(BeFalse())
@@ -115,7 +115,7 @@ func TestNegateTuple(t *testing.T) {
 func TestMultTuple(t *testing.T) {
 	g := NewGomegaWithT(t)
 
-	tup := Tuple{[4]float64{1, -2, 3, -4}}
+	tup := Tuple{1, -2, 3, -4}
 
 	a := tup.Mult(3.5)
 	g.Expect(a.IsPoint()).To(BeFalse())
@@ -137,7 +137,7 @@ func TestMultTuple(t *testing.T) {
 func TestDivTuple(t *testing.T) {
 	g := NewGomegaWithT(t)
 
-	tup := Tuple{[4]float64{1, -2, 3, -4}}
+	tup := Tuple{1, -2, 3, -4}
 
 	a := tup.Div(2)
 	g.Expect(a.IsPoint()).To(BeFalse())

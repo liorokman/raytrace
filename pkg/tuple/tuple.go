@@ -11,85 +11,83 @@ const (
 	WPos int = iota
 )
 
-type Tuple struct {
-	Values [4]float64
-}
+type Tuple [4]float64
 
 func (t Tuple) X() float64 {
-	return t.Values[XPos]
+	return t[XPos]
 }
 
 func (t Tuple) Y() float64 {
-	return t.Values[YPos]
+	return t[YPos]
 }
 
 func (t Tuple) Z() float64 {
-	return t.Values[ZPos]
+	return t[ZPos]
 }
 
 func (t Tuple) W() float64 {
-	return t.Values[WPos]
+	return t[WPos]
 }
 
 func (t Tuple) IsVector() bool {
-	return t.Values[WPos] == 0.0
+	return t[WPos] == 0.0
 }
 
 func (t Tuple) IsPoint() bool {
-	return t.Values[WPos] == 1.0
+	return t[WPos] == 1.0
 }
 
 func NewPoint(x, y, z float64) Tuple {
-	return Tuple{[4]float64{x, y, z, 1.0}}
+	return Tuple{x, y, z, 1.0}
 }
 
 func NewVector(x, y, z float64) Tuple {
-	return Tuple{[4]float64{x, y, z, 0.0}}
+	return Tuple{x, y, z, 0.0}
 }
 
 func (t Tuple) Add(right Tuple) Tuple {
-	return Tuple{[4]float64{
+	return Tuple{
 		t.X() + right.X(),
 		t.Y() + right.Y(),
 		t.Z() + right.Z(),
 		t.W() + right.W(),
-	}}
+	}
 }
 
 func (t Tuple) Subtract(right Tuple) Tuple {
-	return Tuple{[4]float64{
+	return Tuple{
 		t.X() - right.X(),
 		t.Y() - right.Y(),
 		t.Z() - right.Z(),
 		t.W() - right.W(),
-	}}
+	}
 }
 
 func (t Tuple) Negate() Tuple {
-	return Tuple{[4]float64{
+	return Tuple{
 		-t.X(),
 		-t.Y(),
 		-t.Z(),
 		-t.W(),
-	}}
+	}
 }
 
 func (t Tuple) Mult(scalar float64) Tuple {
-	return Tuple{[4]float64{
+	return Tuple{
 		scalar * t.X(),
 		scalar * t.Y(),
 		scalar * t.Z(),
 		scalar * t.W(),
-	}}
+	}
 }
 
 func (t Tuple) Div(scalar float64) Tuple {
-	return Tuple{[4]float64{
+	return Tuple{
 		t.X() / scalar,
 		t.Y() / scalar,
 		t.Z() / scalar,
 		t.W() / scalar,
-	}}
+	}
 }
 
 func (t Tuple) Magnitude() float64 {
@@ -106,8 +104,8 @@ func (t Tuple) Normalize() Tuple {
 
 func (t Tuple) Dot(r Tuple) float64 {
 	res := 0.0
-	for i, _ := range t.Values {
-		res = res + t.Values[i]*r.Values[i]
+	for i, _ := range t {
+		res = res + t[i]*r[i]
 	}
 	return res
 }

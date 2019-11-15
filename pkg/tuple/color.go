@@ -6,7 +6,7 @@ type Color struct {
 
 func NewColor(r, g, b float64) Color {
 	return Color{
-		Tuple{[4]float64{r, g, b, 0.0}},
+		Tuple{r, g, b, 0.0},
 	}
 }
 
@@ -43,6 +43,6 @@ func (c Color) Mult(r float64) Color {
 // Technically the Shur product or Hadamard product
 func (c Color) MultColor(r Color) Color {
 	return Color{
-		Tuple{[4]float64{c.Red() * r.Red(), c.Green() * r.Green(), c.Blue() * r.Blue(), 0.0}},
+		Tuple{c.Red() * r.Red(), c.Green() * r.Green(), c.Blue() * r.Blue(), 0.0},
 	}
 }
