@@ -2,6 +2,8 @@ package tuple
 
 import (
 	"math"
+
+	"github.com/liorokman/raytrace/pkg/utils"
 )
 
 const (
@@ -43,6 +45,14 @@ func NewPoint(x, y, z float64) Tuple {
 
 func NewVector(x, y, z float64) Tuple {
 	return Tuple{x, y, z, 0.0}
+}
+
+func (t Tuple) Equals(o Tuple) bool {
+	return utils.FloatEqual(t.X(), o.X()) &&
+		utils.FloatEqual(t.Y(), o.Y()) &&
+		utils.FloatEqual(t.Z(), o.Z()) &&
+		utils.FloatEqual(t.W(), o.W())
+
 }
 
 func (t Tuple) Add(right Tuple) Tuple {

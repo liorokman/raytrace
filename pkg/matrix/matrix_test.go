@@ -12,10 +12,10 @@ func TestNewMatrix(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	m := Matrix{
-		[]float64{1, 2, 3, 4},
-		[]float64{5.5, 6.5, 7.5, 8.5},
-		[]float64{9, 10, 11, 12},
-		[]float64{13.5, 14.5, 15.5, 16.5},
+		{1, 2, 3, 4},
+		{5.5, 6.5, 7.5, 8.5},
+		{9, 10, 11, 12},
+		{13.5, 14.5, 15.5, 16.5},
 	}
 
 	g.Expect(m[0][0]).To(Equal(1.0))
@@ -27,8 +27,8 @@ func TestNewMatrix(t *testing.T) {
 	g.Expect(m[3][2]).To(Equal(15.5))
 
 	m = Matrix{
-		[]float64{-3, 5},
-		[]float64{1, -2},
+		{-3, 5},
+		{1, -2},
 	}
 	g.Expect(m[0][0]).To(Equal(-3.0))
 	g.Expect(m[0][1]).To(Equal(5.0))
@@ -41,24 +41,24 @@ func TestEquality(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	m1 := Matrix{
-		[]float64{1, 2, 3, 4},
-		[]float64{5, 6, 7, 8},
-		[]float64{9, 8, 7, 6},
-		[]float64{5, 4, 3, 2},
+		{1, 2, 3, 4},
+		{5, 6, 7, 8},
+		{9, 8, 7, 6},
+		{5, 4, 3, 2},
 	}
 	m2 := Matrix{
-		[]float64{1, 2, 3, 4},
-		[]float64{9, 8, 7, 6},
-		[]float64{5, 6, 7, 8},
-		[]float64{5, 4, 3, 2},
+		{1, 2, 3, 4},
+		{9, 8, 7, 6},
+		{5, 6, 7, 8},
+		{5, 4, 3, 2},
 	}
 
 	g.Expect(m1.Equals(m1)).To(BeTrue())
 	g.Expect(m1.Equals(m2)).To(BeFalse())
 
 	m3 := Matrix{
-		[]float64{1, 2},
-		[]float64{3, 4},
+		{1, 2},
+		{3, 4},
 	}
 
 	g.Expect(m1.Equals(m3)).To(BeFalse())
@@ -68,24 +68,24 @@ func TestMultiplication(t *testing.T) {
 
 	g := NewGomegaWithT(t)
 	m1 := Matrix{
-		[]float64{1, 2, 3, 4},
-		[]float64{5, 6, 7, 8},
-		[]float64{9, 8, 7, 6},
-		[]float64{5, 4, 3, 2},
+		{1, 2, 3, 4},
+		{5, 6, 7, 8},
+		{9, 8, 7, 6},
+		{5, 4, 3, 2},
 	}
 
 	m2 := Matrix{
-		[]float64{-2, 1, 2, 3},
-		[]float64{3, 2, 1, -1},
-		[]float64{4, 3, 6, 5},
-		[]float64{1, 2, 7, 8},
+		{-2, 1, 2, 3},
+		{3, 2, 1, -1},
+		{4, 3, 6, 5},
+		{1, 2, 7, 8},
 	}
 
 	m3 := Matrix{
-		[]float64{20, 22, 50, 48},
-		[]float64{44, 54, 114, 108},
-		[]float64{40, 58, 110, 102},
-		[]float64{16, 26, 46, 42},
+		{20, 22, 50, 48},
+		{44, 54, 114, 108},
+		{40, 58, 110, 102},
+		{16, 26, 46, 42},
 	}
 
 	g.Expect(m1.Multiply(m2).Equals(m3)).To(BeTrue())
@@ -95,10 +95,10 @@ func TestMultiplyTuple(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	m1 := Matrix{
-		[]float64{1, 2, 3, 4},
-		[]float64{2, 4, 4, 2},
-		[]float64{8, 6, 4, 1},
-		[]float64{0, 0, 0, 1},
+		{1, 2, 3, 4},
+		{2, 4, 4, 2},
+		{8, 6, 4, 1},
+		{0, 0, 0, 1},
 	}
 
 	t1 := tuple.Tuple{1, 2, 3, 1}
@@ -110,17 +110,17 @@ func TestTranspose(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	m1 := Matrix{
-		[]float64{0, 9, 3, 0},
-		[]float64{9, 8, 0, 8},
-		[]float64{1, 8, 5, 3},
-		[]float64{0, 0, 5, 8},
+		{0, 9, 3, 0},
+		{9, 8, 0, 8},
+		{1, 8, 5, 3},
+		{0, 0, 5, 8},
 	}
 
 	m2 := Matrix{
-		[]float64{0, 9, 1, 0},
-		[]float64{9, 8, 8, 0},
-		[]float64{3, 0, 5, 5},
-		[]float64{0, 8, 3, 8},
+		{0, 9, 1, 0},
+		{9, 8, 8, 0},
+		{3, 0, 5, 5},
+		{0, 8, 3, 8},
 	}
 
 	g.Expect(m1.Transpose().Equals(m2)).To(BeTrue())
@@ -130,9 +130,9 @@ func TestSubmatrix(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	m1 := Matrix{
-		[]float64{1, 5, 0},
-		[]float64{-3, 2, 7},
-		[]float64{0, 6, 3},
+		{1, 5, 0},
+		{-3, 2, 7},
+		{0, 6, 3},
 	}
 
 	g.Expect(m1.Submatrix(0, 2).Equals(Matrix{{-3, 2}, {0, 6}})).To(BeTrue())
@@ -140,10 +140,10 @@ func TestSubmatrix(t *testing.T) {
 	g.Expect(m1.Submatrix(0, 0).Equals(Matrix{{2, 7}, {6, 3}})).To(BeTrue())
 
 	m2 := Matrix{
-		[]float64{-6, 1, 1, 6},
-		[]float64{-8, 5, 8, 6},
-		[]float64{-1, 0, 8, 2},
-		[]float64{-7, 1, -1, 1},
+		{-6, 1, 1, 6},
+		{-8, 5, 8, 6},
+		{-1, 0, 8, 2},
+		{-7, 1, -1, 1},
 	}
 	g.Expect(m2.Submatrix(2, 1).Equals(Matrix{{-6, 1, 6}, {-8, 8, 6}, {-7, -1, 1}})).To(BeTrue())
 }
