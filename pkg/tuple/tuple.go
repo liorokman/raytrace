@@ -129,3 +129,10 @@ func (t Tuple) Cross(r Tuple) Tuple {
 		t.Z()*r.X()-t.X()*r.Z(),
 		t.X()*r.Y()-t.Y()*r.X())
 }
+
+func (t Tuple) Reflect(normal Tuple) Tuple {
+	if !normal.IsVector() || !t.IsVector() {
+		panic("Reflection is between two vectors")
+	}
+	return t.Subtract(normal.Mult(2.0).Mult(t.Dot(normal)))
+}

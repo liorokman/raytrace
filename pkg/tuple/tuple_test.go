@@ -184,3 +184,21 @@ func TestCross(t *testing.T) {
 	g.Expect(func() { a.Cross(NewPoint(1, 2, 3)) }).To(Panic())
 	g.Expect(func() { NewPoint(1, 2, 3).Cross(a) }).To(Panic())
 }
+
+func TestReflect(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	v := math.Sqrt(2.0) / 2.0
+
+	p := NewVector(0, -1, 0)
+	n := NewVector(v, v, 0)
+
+	r := p.Reflect(n)
+	g.Expect(r.Equals(NewVector(1, 0, 0))).To(BeTrue())
+
+	p = NewVector(1, -1, 0)
+	n = NewVector(0, 1, 0)
+	r = p.Reflect(n)
+	g.Expect(r.Equals(NewVector(1, 1, 0))).To(BeTrue())
+
+}

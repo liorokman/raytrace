@@ -46,3 +46,7 @@ func (c Color) MultColor(r Color) Color {
 		Tuple{c.Red() * r.Red(), c.Green() * r.Green(), c.Blue() * r.Blue(), 0.0},
 	}
 }
+
+func (c Color) Equals(r Color) bool {
+	return c.Tuple.Equals(r.Tuple)
+}

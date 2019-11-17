@@ -6,6 +6,8 @@ import (
 	"os"
 
 	"github.com/liorokman/raytrace/pkg/canvas"
+	"github.com/liorokman/raytrace/pkg/light"
+	"github.com/liorokman/raytrace/pkg/material"
 	"github.com/liorokman/raytrace/pkg/ray"
 	"github.com/liorokman/raytrace/pkg/shapes"
 	"github.com/liorokman/raytrace/pkg/tuple"
@@ -27,15 +29,16 @@ func main() {
 
 	c := canvas.New(uint32(*canvasPixels), uint32(*canvasPixels))
 
-	color := tuple.NewColor(1, 0, 0)
+	//color := tuple.NewColor(1, 0, 0)
 
-	light := tuple.NewPoint(0, 0, -5)
+	l := light.New(tuple.NewPoint(-10, 10, -10), tuple.NewColor(1, 1, 1))
+	eye := tuple.NewPoint(0, 0, -5)
 
 	pixelSize := *wallSize / float64(*canvasPixels)
 
 	halfWall := *wallSize / 2.0
 
-	shape := shapes.NewSphere()
+	shape := shapes.NewSphere().WithMaterial(material.New(tuple.NewColor(1, 0.2, 1), 0.1, 0.9, 0.9, 200))
 
 	fmt.Printf("Pixelsize: %#v\n", pixelSize)
 	for y := 0; y < *canvasPixels; y++ {
@@ -45,13 +48,18 @@ func main() {
 
 			position := tuple.NewPoint(float64(worldX), float64(worldY), *wallZ)
 
-			r, err := ray.New(light, position.Subtract(light).Normalize())
+			r, err := ray.New(eye, position.Subtract(eye).Normalize())
 			if err != nil {
 				panic(err)
 			}
 			xs := r.Intersect(shape)
-			if _, ok := ray.Hit(xs...); ok {
-				c.SetPixel(uint32(x), uint32(y), color)
+			if h, ok := ray.Hit(xs...); ok {
+
+				p := r.Position(h.T)
+				n := h.Shape.NormalAt(p)
+				eyev := r.Direction.Mult(-1)
+
+				c.SetPixel(uint32(x), uint32(y), h.Shape.GetMaterial().Lighting(l, p, eyev, n))
 			}
 
 		}
