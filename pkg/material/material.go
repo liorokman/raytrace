@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/liorokman/raytrace/pkg/light"
+	"github.com/liorokman/raytrace/pkg/fixtures"
 	"github.com/liorokman/raytrace/pkg/tuple"
 )
 
@@ -85,7 +85,7 @@ func Default() Material {
 	return New(tuple.NewColor(1, 1, 1), 0.1, 0.9, 0.9, 200.0)
 }
 
-func (m Material) Lighting(l light.PointLight, point tuple.Tuple, eyev, normal tuple.Tuple) tuple.Color {
+func (m Material) Lighting(l fixtures.PointLight, point tuple.Tuple, eyev, normal tuple.Tuple) tuple.Color {
 	effectiveColor := m.Color.MultColor(l.Intensity())
 	lightV := l.Position().Subtract(point).Normalize()
 

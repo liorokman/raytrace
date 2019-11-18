@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/liorokman/raytrace/pkg/canvas"
-	"github.com/liorokman/raytrace/pkg/light"
+	"github.com/liorokman/raytrace/pkg/fixtures"
 	"github.com/liorokman/raytrace/pkg/material"
 	"github.com/liorokman/raytrace/pkg/ray"
 	"github.com/liorokman/raytrace/pkg/shapes"
@@ -31,7 +31,7 @@ func main() {
 
 	//color := tuple.NewColor(1, 0, 0)
 
-	l := light.New(tuple.NewPoint(-10, 10, -10), tuple.NewColor(1, 1, 1))
+	l := fixtures.NewPointLight(tuple.NewPoint(-10, 10, -10), tuple.NewColor(1, 1, 1))
 	eye := tuple.NewPoint(0, 0, -5)
 
 	pixelSize := *wallSize / float64(*canvasPixels)

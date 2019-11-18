@@ -1,4 +1,4 @@
-package light
+package fixtures
 
 import (
 	"github.com/liorokman/raytrace/pkg/tuple"
@@ -9,7 +9,7 @@ type PointLight struct {
 	intensity tuple.Color
 }
 
-func New(position tuple.Tuple, intensity tuple.Color) PointLight {
+func NewPointLight(position tuple.Tuple, intensity tuple.Color) PointLight {
 	if !position.IsPoint() {
 		panic("Pointlight can't be located at a vector")
 	}
