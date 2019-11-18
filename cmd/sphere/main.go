@@ -38,7 +38,7 @@ func main() {
 
 	halfWall := *wallSize / 2.0
 
-	shape := shapes.NewSphere().WithMaterial(material.New(tuple.NewColor(1, 0.2, 1), 0.1, 0.9, 0.9, 200))
+	shape := shapes.NewSphere().WithMaterial(material.NewBuilder().WithColor(tuple.NewColor(1, 0.2, 1)).Build())
 
 	fmt.Printf("Pixelsize: %#v\n", pixelSize)
 	for y := 0; y < *canvasPixels; y++ {

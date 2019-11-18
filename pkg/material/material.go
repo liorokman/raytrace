@@ -16,6 +16,54 @@ type Material struct {
 	shininess float64
 }
 
+type MaterialBuilder struct {
+	m Material
+}
+
+func NewBuilder() *MaterialBuilder {
+	return &MaterialBuilder{Default()}
+}
+
+func (b *MaterialBuilder) WithAmbient(a float64) *MaterialBuilder {
+	if a < 0 || a > 1 {
+		panic("Ambient parameter should be in (0,1) range")
+	}
+	b.m.ambient = a
+	return b
+}
+func (b *MaterialBuilder) WithDiffuse(a float64) *MaterialBuilder {
+	if a < 0 || a > 1 {
+		panic("Diffuse parameter should be in (0,1) range")
+	}
+	b.m.diffuse = a
+	return b
+}
+func (b *MaterialBuilder) WithSpecular(a float64) *MaterialBuilder {
+	if a < 0 || a > 1 {
+		panic("Specular parameter should be in (0,1) range")
+	}
+	b.m.specular = a
+	return b
+}
+func (b *MaterialBuilder) WithShininess(a float64) *MaterialBuilder {
+	if a < 0 {
+		panic("Shininess parameter must be non-negative")
+	}
+	b.m.shininess = a
+	return b
+}
+func (b *MaterialBuilder) WithColor(c tuple.Color) *MaterialBuilder {
+	b.m.Color = c
+	return b
+}
+func (b *MaterialBuilder) Reset() *MaterialBuilder {
+	b.m = Default()
+	return b
+}
+func (b *MaterialBuilder) Build() Material {
+	return b.m
+}
+
 func New(c tuple.Color, ambient, diffuse, specular, shininess float64) Material {
 	if (ambient < 0 || ambient > 1) ||
 		(diffuse < 0 || diffuse > 1) ||
