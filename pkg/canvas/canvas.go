@@ -13,6 +13,7 @@ type Canvas interface {
 	GetPixel(x, y uint32) (tuple.Color, error)
 	Width() uint32
 	Height() uint32
+	WritePPM(wr io.Writer) error
 }
 
 type canvas struct {

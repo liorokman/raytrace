@@ -15,8 +15,8 @@ type World struct {
 	Lights  []fixtures.PointLight
 }
 
-func New() World {
-	return World{
+func New() *World {
+	return &World{
 		objects: []shapes.Shape{},
 		Lights:  []fixtures.PointLight{fixtures.NewPointLight(tuple.NewPoint(-10, 10, -10), tuple.NewColor(1, 1, 1))},
 	}

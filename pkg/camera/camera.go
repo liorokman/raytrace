@@ -63,6 +63,9 @@ func (c Camera) WithTransform(t matrix.Matrix) Camera {
 		vsize:       c.vsize,
 		fieldOfView: c.fieldOfView,
 		transform:   t,
+		halfWidth:   c.halfWidth,
+		halfHeight:  c.halfWidth,
+		pixelSize:   c.pixelSize,
 	}
 }
 

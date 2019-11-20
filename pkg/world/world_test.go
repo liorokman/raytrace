@@ -25,7 +25,7 @@ func defaultWorld() *World {
 		shapes.NewSphere().WithMaterial(mBuilder.Build()),
 		shapes.NewSphere().WithTransform(matrix.NewScale(0.5, 0.5, 0.5)),
 	)
-	return &w
+	return w
 }
 
 func TestDefaultWorld(t *testing.T) {
