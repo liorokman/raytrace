@@ -20,8 +20,12 @@ type MaterialBuilder struct {
 	m Material
 }
 
-func NewBuilder() *MaterialBuilder {
-	return &MaterialBuilder{Default()}
+func NewDefaultBuilder() *MaterialBuilder {
+	return NewBuilder(Default())
+}
+
+func NewBuilder(m Material) *MaterialBuilder {
+	return &MaterialBuilder{m}
 }
 
 func (b *MaterialBuilder) WithAmbient(a float64) *MaterialBuilder {
@@ -57,7 +61,10 @@ func (b *MaterialBuilder) WithColor(c tuple.Color) *MaterialBuilder {
 	return b
 }
 func (b *MaterialBuilder) Reset() *MaterialBuilder {
-	b.m = Default()
+	return b.ResetTo(Default())
+}
+func (b *MaterialBuilder) ResetTo(m Material) *MaterialBuilder {
+	b.m = m
 	return b
 }
 func (b *MaterialBuilder) Build() Material {

@@ -12,5 +12,6 @@ type Shape interface {
 	GetMaterial() material.Material
 
 	WithTransform(matrix.Matrix) Shape
+	WithMaterial(material.Material) Shape
 	NormalAt(tuple.Tuple) tuple.Tuple
 }
