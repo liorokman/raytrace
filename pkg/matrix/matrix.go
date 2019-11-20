@@ -2,9 +2,10 @@ package matrix
 
 import (
 	"fmt"
+	"math"
+
 	"github.com/liorokman/raytrace/pkg/tuple"
 	"github.com/liorokman/raytrace/pkg/utils"
-	"math"
 )
 
 type Matrix [][]float64

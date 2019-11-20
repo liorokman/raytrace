@@ -1,6 +1,7 @@
 package world
 
 import (
+	"fmt"
 	"github.com/liorokman/raytrace/pkg/fixtures"
 	"github.com/liorokman/raytrace/pkg/ray"
 	"github.com/liorokman/raytrace/pkg/shapes"
