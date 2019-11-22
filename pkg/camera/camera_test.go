@@ -104,6 +104,7 @@ func TestRayForPixel(t *testing.T) {
 	g.Expect(r.Origin.Equals(tuple.NewPoint(0, 2, -5))).To(BeTrue())
 	g.Expect(r.Direction.Equals(tuple.NewVector(math.Sqrt(2.0)/2.0, 0.0, -math.Sqrt(2.0)/2.0))).To(BeTrue())
 }
+
 func TestRender(t *testing.T) {
 	g := NewGomegaWithT(t)
 	w := defaultWorld()
