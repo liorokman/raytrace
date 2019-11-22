@@ -2,12 +2,13 @@ package world
 
 import (
 	"fmt"
+	"sort"
+	"sync"
+
 	"github.com/liorokman/raytrace/pkg/fixtures"
 	"github.com/liorokman/raytrace/pkg/ray"
 	"github.com/liorokman/raytrace/pkg/shapes"
 	"github.com/liorokman/raytrace/pkg/tuple"
-	"sort"
-	"sync"
 )
 
 type World struct {
@@ -63,7 +64,8 @@ func (w *World) ShadeHit(comps ray.Computation) tuple.Color {
 	for i, l := range w.Lights {
 		wg.Add(1)
 		go func(ind int, light fixtures.PointLight) {
-			colorFromL[ind] = comps.Shape.GetMaterial().Lighting(light, comps.Point, comps.EyeV, comps.NormalV)
+			shadowed := w.IsShadowed(comps.OverPoint, ind)
+			colorFromL[ind] = comps.Shape.GetMaterial().Lighting(light, comps.Point, comps.EyeV, comps.NormalV, shadowed)
 			wg.Done()
 		}(i, l)
 	}
@@ -83,4 +85,26 @@ func (w *World) ColorAt(r ray.Ray) tuple.Color {
 	} else {
 		return tuple.NewColor(0, 0, 0)
 	}
+}
+
+func (w *World) IsShadowed(p tuple.Tuple, lightIndex int) bool {
+	if !p.IsPoint() {
+		panic("Expecting a point, not a vector")
+	}
+	if lightIndex < 0 || lightIndex >= len(w.Lights) {
+		panic("No such light source in world")
+	}
+	v := w.Lights[lightIndex].Position().Subtract(p)
+	direction := v.Normalize()
+
+	r, err := ray.New(p, direction)
+	if err != nil {
+		panic(err)
+	}
+	intersections := w.IntersectRay(r)
+	if hit, ok := ray.Hit(intersections...); ok {
+		distance := v.Magnitude()
+		return hit.T < distance
+	}
+	return false
 }

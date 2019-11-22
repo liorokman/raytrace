@@ -5,8 +5,10 @@ import (
 
 	. "github.com/onsi/gomega"
 
+	"github.com/liorokman/raytrace/pkg/matrix"
 	"github.com/liorokman/raytrace/pkg/shapes"
 	"github.com/liorokman/raytrace/pkg/tuple"
+	"github.com/liorokman/raytrace/pkg/utils"
 )
 
 func TestHit(t *testing.T) {
@@ -65,4 +67,18 @@ func TestPrecomputation(t *testing.T) {
 	g.Expect(c.EyeV).To(Equal(tuple.NewVector(0, 0, -1)))
 	g.Expect(c.NormalV).To(Equal(tuple.NewVector(0, 0, -1)))
 	g.Expect(c.Inside).To(BeTrue())
+}
+
+func TestOverZ(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	r, e := New(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 0, 1))
+	g.Expect(e).To(BeNil())
+	s := shapes.NewSphere().WithTransform(matrix.NewTranslation(0, 0, 1))
+	i := Intersection{5, s}
+
+	comps := i.PrepareComputation(r)
+	g.Expect(comps.OverPoint.Z()).To(BeNumerically("<", -utils.EPSILON/2))
+	g.Expect(comps.Point.Z()).To(BeNumerically(">", comps.OverPoint.Z()))
+
 }

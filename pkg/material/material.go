@@ -92,7 +92,7 @@ func Default() Material {
 	return New(tuple.NewColor(1, 1, 1), 0.1, 0.9, 0.9, 200.0)
 }
 
-func (m Material) Lighting(l fixtures.PointLight, point tuple.Tuple, eyev, normal tuple.Tuple) tuple.Color {
+func (m Material) Lighting(l fixtures.PointLight, point tuple.Tuple, eyev, normal tuple.Tuple, inShadow bool) tuple.Color {
 	effectiveColor := m.Color.MultColor(l.Intensity())
 	lightV := l.Position().Subtract(point).Normalize()
 
@@ -109,6 +109,9 @@ func (m Material) Lighting(l fixtures.PointLight, point tuple.Tuple, eyev, norma
 			factor := math.Pow(reflectDotEye, m.shininess)
 			specular = l.Intensity().Mult(m.specular * factor)
 		}
+	}
+	if inShadow {
+		return ambient
 	}
 	return ambient.Add(diffuse).Add(specular)
 }

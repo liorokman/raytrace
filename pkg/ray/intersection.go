@@ -5,6 +5,7 @@ import (
 
 	"github.com/liorokman/raytrace/pkg/shapes"
 	"github.com/liorokman/raytrace/pkg/tuple"
+	"github.com/liorokman/raytrace/pkg/utils"
 )
 
 type Intersection struct {
@@ -14,10 +15,11 @@ type Intersection struct {
 
 type Computation struct {
 	Intersection
-	Point   tuple.Tuple
-	EyeV    tuple.Tuple
-	NormalV tuple.Tuple
-	Inside  bool
+	Point     tuple.Tuple
+	EyeV      tuple.Tuple
+	NormalV   tuple.Tuple
+	OverPoint tuple.Tuple
+	Inside    bool
 }
 
 type ByTime []Intersection
@@ -57,6 +59,7 @@ func (i Intersection) PrepareComputation(r Ray) Computation {
 		retval.Inside = true
 		retval.NormalV = retval.NormalV.Mult(-1)
 	}
+	retval.OverPoint = retval.Point.Add(retval.NormalV.Mult(utils.EPSILON))
 
 	return retval
 }

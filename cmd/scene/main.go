@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/liorokman/raytrace/pkg/camera"
+	"github.com/liorokman/raytrace/pkg/fixtures"
 	"github.com/liorokman/raytrace/pkg/material"
 	"github.com/liorokman/raytrace/pkg/matrix"
 	"github.com/liorokman/raytrace/pkg/shapes"
@@ -29,6 +30,7 @@ func main() {
 	}
 
 	w := world.New()
+	w.Lights = append(w.Lights, fixtures.NewPointLight(tuple.NewPoint(10, 10, -15), tuple.NewColor(1, 0.5, 0.5)))
 	mb := material.NewDefaultBuilder().WithColor(tuple.NewColor(1, 0.9, 0.9)).WithSpecular(0)
 
 	w.AddShapes(shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewScale(10, 0.01, 10)),

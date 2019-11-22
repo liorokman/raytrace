@@ -97,3 +97,34 @@ func TestColorAt(t *testing.T) {
 	c = w.ColorAt(r)
 	g.Expect(c.Equals(w.Shape(1).GetMaterial().Color)).To(BeTrue())
 }
+
+func TestIsShadowed(t *testing.T) {
+	g := NewGomegaWithT(t)
+	w := defaultWorld()
+
+	g.Expect(w.IsShadowed(tuple.NewPoint(0, 10, 0), 0)).To(BeFalse())
+	g.Expect(w.IsShadowed(tuple.NewPoint(10, -10, 10), 0)).To(BeTrue())
+	g.Expect(w.IsShadowed(tuple.NewPoint(-20, 20, -20), 0)).To(BeFalse())
+	g.Expect(w.IsShadowed(tuple.NewPoint(-2, 2, -2), 0)).To(BeFalse())
+}
+
+func TestShadeHit(t *testing.T) {
+
+	g := NewGomegaWithT(t)
+	w := New()
+
+	w.Lights[0] = fixtures.NewPointLight(tuple.NewPoint(0, 0, -10), tuple.NewColor(1, 1, 1))
+
+	w.AddShapes(shapes.NewSphere(),
+		shapes.NewSphere().WithTransform(matrix.NewTranslation(0, 0, 10)))
+
+	r, err := ray.New(tuple.NewPoint(0, 0, 5), tuple.NewVector(0, 0, 1))
+	g.Expect(err).To(BeNil())
+	i := ray.Intersection{4, w.objects[1]}
+
+	comps := i.PrepareComputation(r)
+	c := w.ShadeHit(comps)
+
+	g.Expect(c.Equals(tuple.NewColor(0.1, 0.1, 0.1))).To(BeTrue())
+
+}
