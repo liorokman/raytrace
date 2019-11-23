@@ -1,74 +1,43 @@
 package shapes
 
 import (
-	"fmt"
-	"sync/atomic"
+	"math"
 
 	"github.com/liorokman/raytrace/pkg/material"
 	"github.com/liorokman/raytrace/pkg/matrix"
 	"github.com/liorokman/raytrace/pkg/tuple"
 )
 
-const sphereId = "S"
-
-var sphereCounter int32 = 0
-
-type Sphere struct {
-	id        int32
-	transform matrix.Matrix
-	material  material.Material
+type sphere struct {
 }
 
-func NewSphere() Sphere {
+func NewSphere() Shape {
+	return newShape(material.Default(), matrix.NewIdentity(), sphere{})
+}
 
-	return Sphere{
-		id:        atomic.AddInt32(&sphereCounter, 1),
-		transform: matrix.NewIdentity(),
-		material:  material.Default(),
+func (s sphere) shapeIdPrefix() string {
+	return "S"
+}
+
+func (s sphere) normalAt(point tuple.Tuple) tuple.Tuple {
+	return point.Subtract(tuple.NewPoint(0, 0, 0))
+}
+
+func (s sphere) localIntersect(direction tuple.Tuple, origin tuple.Tuple) []float64 {
+
+	sr := origin.Subtract(tuple.NewPoint(0, 0, 0))
+	a := direction.Dot(direction)
+	b := 2 * direction.Dot(sr)
+	c := sr.Dot(sr) - 1.0
+
+	// Solve "a*t^2 + b*t + c" for t to get the intersections
+	disc := b*b - 4*a*c
+	if disc < 0 {
+		return []float64{}
 	}
-}
-
-func (s Sphere) ID() string {
-	return fmt.Sprintf("%s%d", sphereId, s.id)
-}
-
-func (s Sphere) GetTransform() matrix.Matrix {
-	return s.transform
-}
-
-func (s Sphere) GetMaterial() material.Material {
-	return s.material
-}
-
-func (s Sphere) WithTransform(t matrix.Matrix) Shape {
-	res := Sphere{
-		id:        atomic.AddInt32(&sphereCounter, 1),
-		transform: t,
-		material:  s.material,
+	rootOfDisc := math.Sqrt(disc)
+	return []float64{
+		(-b - rootOfDisc) / (2 * a),
+		(-b + rootOfDisc) / (2 * a),
 	}
-	return res
-}
-
-func (s Sphere) WithMaterial(m material.Material) Shape {
-	res := Sphere{
-		id:        atomic.AddInt32(&sphereCounter, 1),
-		transform: s.transform,
-		material:  m,
-	}
-	return res
-}
-
-func (s Sphere) NormalAt(point tuple.Tuple) tuple.Tuple {
-	if !point.IsPoint() {
-		panic("Can't compute a normal at a Vector")
-	}
-	shapeInverseTransform, err := s.GetTransform().Inverse()
-	if err != nil {
-		panic(err)
-	}
-	objPoint := shapeInverseTransform.MultiplyTuple(point)
-	objNormal := objPoint.Subtract(tuple.NewPoint(0, 0, 0))
-	worldNormal := shapeInverseTransform.Transpose().MultiplyTuple(objNormal)
-	worldNormal[tuple.WPos] = 0
-	return worldNormal.Normalize()
 }

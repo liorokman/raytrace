@@ -19,7 +19,7 @@ func TestUniqueSpheres(t *testing.T) {
 	g.Expect(s1.ID()).ToNot(Equal(s2.ID()))
 }
 
-func TestSphereTransform(t *testing.T) {
+func TestShapeTransform(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	s1 := NewSphere()

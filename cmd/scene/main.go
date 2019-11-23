@@ -32,10 +32,12 @@ func main() {
 	w := world.New()
 	w.Lights = append(w.Lights, fixtures.NewPointLight(tuple.NewPoint(10, 10, -15), tuple.NewColor(1, 0.5, 0.5)))
 	mb := material.NewDefaultBuilder().WithColor(tuple.NewColor(1, 0.9, 0.9)).WithSpecular(0)
-
-	w.AddShapes(shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewScale(10, 0.01, 10)),
-		shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(0, 0, 5).RotateY(-math.Pi/4).RotateX(math.Pi/2).Scale(10, 0.01, 10)),
-		shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(0, 0, 5).RotateY(math.Pi/4).RotateX(math.Pi/2).Scale(10, 0.01, 10)))
+	/*
+		w.AddShapes(shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewScale(10, 0.01, 10)),
+			shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(0, 0, 5).RotateY(-math.Pi/4).RotateX(math.Pi/2).Scale(10, 0.01, 10)),
+			shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(0, 0, 5).RotateY(math.Pi/4).RotateX(math.Pi/2).Scale(10, 0.01, 10)))
+	*/
+	w.AddShapes(shapes.NewPlane().WithTransform(matrix.NewTranslation(0, 0, -10)).WithMaterial(mb.Build()))
 
 	mb.Reset().WithColor(tuple.NewColor(0.1, 1, 0.5)).WithDiffuse(0.7).WithSpecular(0.3)
 	w.AddShapes(shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(-0.5, 1, 0.5)))
