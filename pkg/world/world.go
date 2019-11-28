@@ -58,7 +58,7 @@ func (w *World) IntersectRay(r ray.Ray) []ray.Intersection {
 	return retval
 }
 
-func (w *World) ShadeHit(comps ray.Computation) tuple.Color {
+func (w *World) ShadeHit(comps ray.Computation, depth int) tuple.Color {
 	wg := sync.WaitGroup{}
 	colorFromL := make([]tuple.Color, len(w.Lights))
 	for i, l := range w.Lights {
@@ -66,24 +66,37 @@ func (w *World) ShadeHit(comps ray.Computation) tuple.Color {
 		go func(ind int, light fixtures.PointLight) {
 			shadowed := w.IsShadowed(comps.OverPoint, ind)
 			colorFromL[ind] = comps.Shape.GetMaterial().Lighting(comps.Shape.GetTransform(), light, comps.Point, comps.EyeV, comps.NormalV, shadowed)
+			colorFromL[ind] = colorFromL[ind].Add(w.ReflectedColor(comps, depth))
 			wg.Done()
 		}(i, l)
 	}
 	wg.Wait()
-	retval := tuple.NewColor(0, 0, 0)
+	retval := tuple.Black
 	for _, c := range colorFromL {
 		retval = retval.Add(c)
 	}
 	return retval
 }
 
-func (w *World) ColorAt(r ray.Ray) tuple.Color {
+func (w *World) ReflectedColor(comps ray.Computation, depth int) tuple.Color {
+	if comps.Shape.GetMaterial().Reflective() == 0 || depth <= 0 {
+		return tuple.Black
+	}
+	reflectedRay, err := ray.New(comps.OverPoint, comps.ReflectV)
+	if err != nil {
+		panic(err)
+	}
+	c := w.ColorAt(reflectedRay, depth-1)
+	return c.Mult(comps.Shape.GetMaterial().Reflective())
+}
+
+func (w *World) ColorAt(r ray.Ray, depth int) tuple.Color {
 	xs := w.IntersectRay(r)
 	if h, ok := ray.Hit(xs...); ok {
 		comps := h.PrepareComputation(r)
-		return w.ShadeHit(comps)
+		return w.ShadeHit(comps, depth)
 	} else {
-		return tuple.NewColor(0, 0, 0)
+		return tuple.Black
 	}
 }
 

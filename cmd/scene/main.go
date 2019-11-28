@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/liorokman/raytrace/pkg/camera"
-	"github.com/liorokman/raytrace/pkg/fixtures"
+	//"github.com/liorokman/raytrace/pkg/fixtures"
 	"github.com/liorokman/raytrace/pkg/material"
 	"github.com/liorokman/raytrace/pkg/matrix"
 	"github.com/liorokman/raytrace/pkg/shapes"
@@ -30,9 +30,9 @@ func main() {
 	}
 
 	w := world.New()
-	w.Lights = append(w.Lights, fixtures.NewPointLight(tuple.NewPoint(10, 10, -15), tuple.NewColor(1, 0.5, 0.5)))
-	mb := material.NewDefaultBuilder().WithPattern(material.NewCheckerPattern(tuple.Red, tuple.NewColor(0.1, 0.1, 1))).WithSpecular(0)
-	//mb := material.NewDefaultBuilder().WithPattern(material.NewSolidPattern(tuple.NewColor(0.1, 0.1, 1))).WithSpecular(0)
+	//	w.Lights = append(w.Lights, fixtures.NewPointLight(tuple.NewPoint(10, 10, -15), tuple.NewColor(1, 0.5, 0.5)))
+	//mb := material.NewDefaultBuilder().WithPattern(material.NewCheckerPattern(tuple.Red, tuple.NewColor(0.1, 0.1, 1))).WithSpecular(0).WithReflective(0.8)
+	mb := material.NewDefaultBuilder().WithPattern(material.NewSolidPattern(tuple.White)).WithSpecular(0).WithReflective(1).WithDiffuse(1)
 	/*
 		w.AddShapes(shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewScale(10, 0.01, 10)),
 			shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(0, 0, 5).RotateY(-math.Pi/4).RotateX(math.Pi/2).Scale(10, 0.01, 10)),
@@ -50,14 +50,14 @@ func main() {
 
 	cam := camera.NewCamera(uint32(*hsize), uint32(*vsize), math.Pi/3.0).
 		WithTransform(camera.ViewTransformation(
-			tuple.NewPoint(0, 1.5, -5),
+			tuple.NewPoint(-5, 1.5, -5),
 			tuple.NewPoint(0, 1, 0),
 			tuple.NewVector(0, 1, 0)))
 	fmt.Printf("Pixelsize: %v\n", cam.PixelSize())
 	image := cam.Render(w)
 
 	if *frame {
-		borderColor := tuple.NewColor(1, 1, 1)
+		borderColor := tuple.Red
 		for x := uint32(0); x < cam.HSize(); x++ {
 			for y := uint32(0); y < cam.VSize(); y++ {
 				image.SetPixel(uint32(0), uint32(x), borderColor)

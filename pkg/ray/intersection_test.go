@@ -1,6 +1,8 @@
 package ray
 
 import (
+	"fmt"
+	"math"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -67,6 +69,21 @@ func TestPrecomputation(t *testing.T) {
 	g.Expect(c.EyeV).To(Equal(tuple.NewVector(0, 0, -1)))
 	g.Expect(c.NormalV).To(Equal(tuple.NewVector(0, 0, -1)))
 	g.Expect(c.Inside).To(BeTrue())
+}
+
+func TestPrepareReflectVector(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	r, err := New(tuple.NewPoint(0, 1, -1), tuple.NewVector(0, -math.Sqrt(2.0)/2.0, math.Sqrt(2)/2.0))
+	g.Expect(err).To(BeNil())
+
+	i := Intersection{
+		T:     math.Sqrt(2),
+		Shape: shapes.NewPlane(),
+	}
+	comps := i.PrepareComputation(r)
+	fmt.Printf("Comps: %#v\n", comps)
+	g.Expect(comps.ReflectV.Equals(tuple.NewVector(0, math.Sqrt(2)/2, math.Sqrt(2)/2))).To(BeTrue())
 }
 
 func TestOverZ(t *testing.T) {

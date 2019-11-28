@@ -1,6 +1,7 @@
 package world
 
 import (
+	"math"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -34,6 +35,65 @@ func TestDefaultWorld(t *testing.T) {
 	g.Expect(w.NumObjects()).To(Equal(2))
 }
 
+func TestReflection(t *testing.T) {
+	g := NewGomegaWithT(t)
+	w := defaultWorld()
+	r, e := ray.New(tuple.NewPoint(0, 0, 0), tuple.NewVector(0, 0, 1))
+	g.Expect(e).To(BeNil())
+
+	mb := material.NewBuilder(w.Shape(1).GetMaterial())
+	mb.WithAmbient(1)
+	w.SetShape(1, w.Shape(1).WithMaterial(mb.Build()))
+	i := ray.Intersection{
+		T:     1,
+		Shape: w.Shape(1),
+	}
+	comps := i.PrepareComputation(r)
+	color := w.ReflectedColor(comps, 5)
+	g.Expect(color).To(Equal(tuple.Black))
+
+	mb.Reset().WithReflective(0.5)
+	s := shapes.NewPlane().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(0, -1, 0))
+	w.AddShapes(s)
+	r, e = ray.New(tuple.NewPoint(0, 0, -3), tuple.NewVector(0, -math.Sqrt(2)/2.0, math.Sqrt(2.0)/2.0))
+	g.Expect(e).To(BeNil())
+	i = ray.Intersection{
+		T:     math.Sqrt(2),
+		Shape: s,
+	}
+	comps = i.PrepareComputation(r)
+	color = w.ReflectedColor(comps, 5)
+	g.Expect(color.Equals(tuple.NewColor(0.1903323, 0.2379154, 0.14274924))).To(BeTrue())
+
+	color = w.ShadeHit(comps, 5)
+	g.Expect(color.Equals(tuple.NewColor(0.8767577, 0.9243407, 0.82917462))).To(BeTrue())
+}
+
+func TestNoInfiniteRecursionInReflection(t *testing.T) {
+	g := NewGomegaWithT(t)
+	w := defaultWorld()
+
+	mb := material.NewDefaultBuilder().WithReflective(0.5)
+	w.AddShapes(shapes.NewPlane().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(0, -1, 0)))
+	r, e := ray.New(tuple.NewPoint(0, 0, -3), tuple.NewVector(0, -math.Sqrt(2)/2.0, math.Sqrt(2)/2.0))
+	g.Expect(e).To(BeNil())
+	i := ray.Intersection{
+		T:     math.Sqrt(2.0),
+		Shape: w.Shape(2),
+	}
+	comps := i.PrepareComputation(r)
+	g.Expect(w.ReflectedColor(comps, 0)).To(Equal(tuple.Black))
+
+	w = New()
+	w.Lights[0] = fixtures.NewPointLight(tuple.NewPoint(0, 0, 0), tuple.White)
+	mb.Reset().WithReflective(1)
+	w.AddShapes(shapes.NewPlane().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(0, -1, 0)))
+	w.AddShapes(shapes.NewPlane().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(0, 1, 0)))
+	r, e = ray.New(tuple.NewPoint(0, 0, 0), tuple.NewVector(0, 1, 0))
+	g.Expect(e).To(BeNil())
+	g.Expect(w.ColorAt(r, 4)).To(Equal(tuple.NewColor(9.5, 9.5, 9.5)))
+}
+
 func TestIntersectWorld(t *testing.T) {
 	g := NewGomegaWithT(t)
 	w := defaultWorld()
@@ -57,7 +117,7 @@ func TestShadeWorld(t *testing.T) {
 
 	i := ray.Intersection{4, w.Shape(0)}
 	comps := i.PrepareComputation(r)
-	c := w.ShadeHit(comps)
+	c := w.ShadeHit(comps, 5)
 	g.Expect(c.Equals(tuple.NewColor(0.38066, 0.47583, 0.2855))).To(BeTrue())
 
 	w.Lights[0] = fixtures.NewPointLight(tuple.NewPoint(0, 0.25, 0), tuple.NewColor(1, 1, 1))
@@ -65,7 +125,7 @@ func TestShadeWorld(t *testing.T) {
 	g.Expect(e).To(BeNil())
 	i = ray.Intersection{0.5, w.Shape(1)}
 	comps = i.PrepareComputation(r)
-	c = w.ShadeHit(comps)
+	c = w.ShadeHit(comps, 5)
 	g.Expect(c.Equals(tuple.NewColor(0.90498, 0.90498, 0.90498))).To(BeTrue())
 }
 
@@ -76,13 +136,13 @@ func TestColorAt(t *testing.T) {
 	// Miss
 	r, e := ray.New(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 1, 0))
 	g.Expect(e).To(BeNil())
-	c := w.ColorAt(r)
+	c := w.ColorAt(r, 5)
 	g.Expect(c).To(Equal(tuple.NewColor(0, 0, 0)))
 
 	// Hit
 	r, e = ray.New(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 0, 1))
 	g.Expect(e).To(BeNil())
-	c = w.ColorAt(r)
+	c = w.ColorAt(r, 5)
 	g.Expect(c.Equals(tuple.NewColor(0.38066, 0.47583, 0.2855))).To(BeTrue())
 
 	// Intersection is behind the ray
@@ -94,7 +154,7 @@ func TestColorAt(t *testing.T) {
 	}
 	r, e = ray.New(tuple.NewPoint(0, 0, 0.75), tuple.NewVector(0, 0, -1))
 	g.Expect(e).To(BeNil())
-	c = w.ColorAt(r)
+	c = w.ColorAt(r, 5)
 	g.Expect(c.Equals(w.Shape(1).GetMaterial().Pattern.ColorAt(tuple.NewPoint(0, 0, 0.75)))).To(BeTrue())
 }
 
@@ -123,7 +183,7 @@ func TestShadeHit(t *testing.T) {
 	i := ray.Intersection{4, w.objects[1]}
 
 	comps := i.PrepareComputation(r)
-	c := w.ShadeHit(comps)
+	c := w.ShadeHit(comps, 5)
 
 	g.Expect(c.Equals(tuple.NewColor(0.1, 0.1, 0.1))).To(BeTrue())
 

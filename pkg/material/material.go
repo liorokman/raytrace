@@ -10,11 +10,12 @@ import (
 )
 
 type Material struct {
-	Pattern   Pattern
-	ambient   float64
-	diffuse   float64
-	specular  float64
-	shininess float64
+	Pattern    Pattern
+	ambient    float64
+	diffuse    float64
+	specular   float64
+	shininess  float64
+	reflective float64
 }
 
 type MaterialBuilder struct {
@@ -43,6 +44,7 @@ func (b *MaterialBuilder) WithDiffuse(a float64) *MaterialBuilder {
 	b.m.diffuse = a
 	return b
 }
+
 func (b *MaterialBuilder) WithSpecular(a float64) *MaterialBuilder {
 	if a < 0 || a > 1 {
 		panic("Specular parameter should be in (0,1) range")
@@ -50,6 +52,15 @@ func (b *MaterialBuilder) WithSpecular(a float64) *MaterialBuilder {
 	b.m.specular = a
 	return b
 }
+
+func (b *MaterialBuilder) WithReflective(a float64) *MaterialBuilder {
+	if a < 0 || a > 1 {
+		panic("Reflective parameter should be in (0,1) range")
+	}
+	b.m.reflective = a
+	return b
+}
+
 func (b *MaterialBuilder) WithShininess(a float64) *MaterialBuilder {
 	if a < 0 {
 		panic("Shininess parameter must be non-negative")
@@ -79,7 +90,7 @@ func (b *MaterialBuilder) Build() Material {
 	return b.m
 }
 
-func New(p Pattern, ambient, diffuse, specular, shininess float64) Material {
+func New(p Pattern, ambient, diffuse, specular, shininess, reflective float64) Material {
 	if (ambient < 0 || ambient > 1) ||
 		(diffuse < 0 || diffuse > 1) ||
 		(specular < 0 || specular > 1) ||
@@ -88,16 +99,21 @@ func New(p Pattern, ambient, diffuse, specular, shininess float64) Material {
 	}
 
 	return Material{
-		Pattern:   p,
-		ambient:   ambient,
-		diffuse:   diffuse,
-		specular:  specular,
-		shininess: shininess,
+		Pattern:    p,
+		ambient:    ambient,
+		diffuse:    diffuse,
+		specular:   specular,
+		shininess:  shininess,
+		reflective: reflective,
 	}
 }
 
 func Default() Material {
-	return New(NewSolidPattern(tuple.White), 0.1, 0.9, 0.9, 200.0)
+	return New(NewSolidPattern(tuple.White), 0.1, 0.9, 0.9, 200.0, 0.0)
+}
+
+func (m Material) Reflective() float64 {
+	return m.reflective
 }
 
 func (m Material) Lighting(objTransform matrix.Matrix, l fixtures.PointLight, point tuple.Tuple, eyev, normal tuple.Tuple, inShadow bool) tuple.Color {
@@ -105,8 +121,8 @@ func (m Material) Lighting(objTransform matrix.Matrix, l fixtures.PointLight, po
 	lightV := l.Position().Subtract(point).Normalize()
 
 	ambient := effectiveColor.Mult(m.ambient)
-	diffuse := tuple.NewColor(0, 0, 0)
-	specular := tuple.NewColor(0, 0, 0)
+	diffuse := tuple.Black
+	specular := tuple.Black
 
 	lightDotNormal := lightV.Dot(normal)
 	if lightDotNormal >= 0 {

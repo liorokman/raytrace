@@ -99,7 +99,7 @@ func (c Camera) Render(w *world.World) canvas.Canvas {
 	for y := uint32(0); y < c.hsize; y++ {
 		for x := uint32(0); x < c.vsize; x++ {
 			ray := c.RayForPixel(x, y)
-			color := w.ColorAt(ray)
+			color := w.ColorAt(ray, 4)
 			image.SetPixel(x, y, color)
 			count--
 			if count%mark == 0 {

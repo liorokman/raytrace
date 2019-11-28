@@ -20,6 +20,7 @@ type Computation struct {
 	NormalV   tuple.Tuple
 	OverPoint tuple.Tuple
 	Inside    bool
+	ReflectV  tuple.Tuple
 }
 
 type ByTime []Intersection
@@ -60,6 +61,7 @@ func (i Intersection) PrepareComputation(r Ray) Computation {
 		retval.NormalV = retval.NormalV.Mult(-1)
 	}
 	retval.OverPoint = retval.Point.Add(retval.NormalV.Mult(utils.EPSILON))
+	retval.ReflectV = r.Direction.Reflect(retval.NormalV)
 
 	return retval
 }
