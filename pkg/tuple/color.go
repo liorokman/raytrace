@@ -1,5 +1,13 @@
 package tuple
 
+var (
+	Black = NewColor(0, 0, 0)
+	White = NewColor(1, 1, 1)
+	Red   = NewColor(1, 0, 0)
+	Green = NewColor(0, 1, 0)
+	Blue  = NewColor(0, 0, 1)
+)
+
 type Color struct {
 	Tuple
 }

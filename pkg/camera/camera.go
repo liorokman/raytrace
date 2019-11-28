@@ -1,6 +1,7 @@
 package camera
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/liorokman/raytrace/pkg/canvas"
@@ -92,14 +93,21 @@ func (c Camera) RayForPixel(px, py uint32) ray.Ray {
 }
 
 func (c Camera) Render(w *world.World) canvas.Canvas {
+	count := c.hsize * c.vsize
+	mark := count / 100
 	image := canvas.New(c.hsize, c.vsize)
 	for y := uint32(0); y < c.hsize; y++ {
 		for x := uint32(0); x < c.vsize; x++ {
 			ray := c.RayForPixel(x, y)
 			color := w.ColorAt(ray)
 			image.SetPixel(x, y, color)
+			count--
+			if count%mark == 0 {
+				fmt.Printf(".")
+			}
 		}
 	}
+	fmt.Printf("\n")
 	return image
 }
 

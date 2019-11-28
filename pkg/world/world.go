@@ -65,7 +65,7 @@ func (w *World) ShadeHit(comps ray.Computation) tuple.Color {
 		wg.Add(1)
 		go func(ind int, light fixtures.PointLight) {
 			shadowed := w.IsShadowed(comps.OverPoint, ind)
-			colorFromL[ind] = comps.Shape.GetMaterial().Lighting(light, comps.Point, comps.EyeV, comps.NormalV, shadowed)
+			colorFromL[ind] = comps.Shape.GetMaterial().Lighting(comps.Shape.GetTransform(), light, comps.Point, comps.EyeV, comps.NormalV, shadowed)
 			wg.Done()
 		}(i, l)
 	}

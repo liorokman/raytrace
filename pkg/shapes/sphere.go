@@ -27,17 +27,17 @@ func (s sphere) localIntersect(direction tuple.Tuple, origin tuple.Tuple) []floa
 
 	sr := origin.Subtract(tuple.NewPoint(0, 0, 0))
 	a := direction.Dot(direction)
-	b := 2 * direction.Dot(sr)
+	b := 2.0 * direction.Dot(sr)
 	c := sr.Dot(sr) - 1.0
 
 	// Solve "a*t^2 + b*t + c" for t to get the intersections
-	disc := b*b - 4*a*c
+	disc := b*b - 4.0*a*c
 	if disc < 0 {
 		return []float64{}
 	}
 	rootOfDisc := math.Sqrt(disc)
 	return []float64{
-		(-b - rootOfDisc) / (2 * a),
-		(-b + rootOfDisc) / (2 * a),
+		(-b - rootOfDisc) / (2.0 * a),
+		(-b + rootOfDisc) / (2.0 * a),
 	}
 }

@@ -95,7 +95,7 @@ func TestColorAt(t *testing.T) {
 	r, e = ray.New(tuple.NewPoint(0, 0, 0.75), tuple.NewVector(0, 0, -1))
 	g.Expect(e).To(BeNil())
 	c = w.ColorAt(r)
-	g.Expect(c.Equals(w.Shape(1).GetMaterial().Color)).To(BeTrue())
+	g.Expect(c.Equals(w.Shape(1).GetMaterial().Pattern.ColorAt(tuple.NewPoint(0, 0, 0.75)))).To(BeTrue())
 }
 
 func TestIsShadowed(t *testing.T) {

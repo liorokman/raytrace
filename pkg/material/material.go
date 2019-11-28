@@ -5,11 +5,12 @@ import (
 	"math"
 
 	"github.com/liorokman/raytrace/pkg/fixtures"
+	"github.com/liorokman/raytrace/pkg/matrix"
 	"github.com/liorokman/raytrace/pkg/tuple"
 )
 
 type Material struct {
-	Color     tuple.Color
+	Pattern   Pattern
 	ambient   float64
 	diffuse   float64
 	specular  float64
@@ -56,13 +57,20 @@ func (b *MaterialBuilder) WithShininess(a float64) *MaterialBuilder {
 	b.m.shininess = a
 	return b
 }
-func (b *MaterialBuilder) WithColor(c tuple.Color) *MaterialBuilder {
-	b.m.Color = c
+
+func (b *MaterialBuilder) WithPattern(p Pattern) *MaterialBuilder {
+	b.m.Pattern = p
 	return b
 }
+
+func (b *MaterialBuilder) WithColor(c tuple.Color) *MaterialBuilder {
+	return b.WithPattern(NewSolidPattern(c))
+}
+
 func (b *MaterialBuilder) Reset() *MaterialBuilder {
 	return b.ResetTo(Default())
 }
+
 func (b *MaterialBuilder) ResetTo(m Material) *MaterialBuilder {
 	b.m = m
 	return b
@@ -71,7 +79,7 @@ func (b *MaterialBuilder) Build() Material {
 	return b.m
 }
 
-func New(c tuple.Color, ambient, diffuse, specular, shininess float64) Material {
+func New(p Pattern, ambient, diffuse, specular, shininess float64) Material {
 	if (ambient < 0 || ambient > 1) ||
 		(diffuse < 0 || diffuse > 1) ||
 		(specular < 0 || specular > 1) ||
@@ -80,7 +88,7 @@ func New(c tuple.Color, ambient, diffuse, specular, shininess float64) Material 
 	}
 
 	return Material{
-		Color:     c,
+		Pattern:   p,
 		ambient:   ambient,
 		diffuse:   diffuse,
 		specular:  specular,
@@ -89,11 +97,11 @@ func New(c tuple.Color, ambient, diffuse, specular, shininess float64) Material 
 }
 
 func Default() Material {
-	return New(tuple.NewColor(1, 1, 1), 0.1, 0.9, 0.9, 200.0)
+	return New(NewSolidPattern(tuple.White), 0.1, 0.9, 0.9, 200.0)
 }
 
-func (m Material) Lighting(l fixtures.PointLight, point tuple.Tuple, eyev, normal tuple.Tuple, inShadow bool) tuple.Color {
-	effectiveColor := m.Color.MultColor(l.Intensity())
+func (m Material) Lighting(objTransform matrix.Matrix, l fixtures.PointLight, point tuple.Tuple, eyev, normal tuple.Tuple, inShadow bool) tuple.Color {
+	effectiveColor := m.Pattern.PatternAtObject(objTransform, point).MultColor(l.Intensity())
 	lightV := l.Position().Subtract(point).Normalize()
 
 	ambient := effectiveColor.Mult(m.ambient)

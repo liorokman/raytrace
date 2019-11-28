@@ -31,7 +31,8 @@ func main() {
 
 	w := world.New()
 	w.Lights = append(w.Lights, fixtures.NewPointLight(tuple.NewPoint(10, 10, -15), tuple.NewColor(1, 0.5, 0.5)))
-	mb := material.NewDefaultBuilder().WithColor(tuple.NewColor(1, 0.9, 0.9)).WithSpecular(0)
+	mb := material.NewDefaultBuilder().WithPattern(material.NewCheckerPattern(tuple.Red, tuple.NewColor(0.1, 0.1, 1))).WithSpecular(0)
+	//mb := material.NewDefaultBuilder().WithPattern(material.NewSolidPattern(tuple.NewColor(0.1, 0.1, 1))).WithSpecular(0)
 	/*
 		w.AddShapes(shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewScale(10, 0.01, 10)),
 			shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(0, 0, 5).RotateY(-math.Pi/4).RotateX(math.Pi/2).Scale(10, 0.01, 10)),
@@ -39,10 +40,10 @@ func main() {
 	*/
 	w.AddShapes(shapes.NewPlane().WithTransform(matrix.NewTranslation(0, 0, -10)).WithMaterial(mb.Build()))
 
-	mb.Reset().WithColor(tuple.NewColor(0.1, 1, 0.5)).WithDiffuse(0.7).WithSpecular(0.3)
-	w.AddShapes(shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(-0.5, 1, 0.5)))
+	mb.Reset().WithPattern(material.NewRingPattern(tuple.Green, tuple.Blue).WithTransform(matrix.NewTranslation(1.5, 1.5, 1.5).Scale(0.2, 0.2, 0.2))).WithDiffuse(0.7).WithSpecular(0.3)
+	w.AddShapes(shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(-1.5, 1, 0.5)))
 
-	mb.WithColor(tuple.NewColor(0.5, 1, 0.1))
+	mb.WithPattern(material.NewGradientPattern(tuple.NewColor(0.5, 1, 0.1), tuple.NewColor(0.15, 0, 0.9)).WithTransform(matrix.NewTranslation(1.5, 1.5, 1.5)))
 	w.AddShapes(shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(1.5, 0.5, -0.5).Scale(0.5, 0.5, 0.5)))
 	mb.WithColor(tuple.NewColor(1, 0.8, 0.1))
 	w.AddShapes(shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(-1.5, 0.33, -0.75).Scale(0.33, 0.33, 0.33)))
