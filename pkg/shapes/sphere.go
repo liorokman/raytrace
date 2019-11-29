@@ -15,6 +15,11 @@ func NewSphere() Shape {
 	return newShape(material.Default(), matrix.NewIdentity(), sphere{})
 }
 
+func NewGlassSphere() Shape {
+	mb := material.NewDefaultBuilder().WithTransparency(1.0).WithRefractiveIndex(1.5)
+	return newShape(mb.Build(), matrix.NewIdentity(), sphere{})
+}
+
 func (s sphere) shapeIdPrefix() string {
 	return "S"
 }

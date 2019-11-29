@@ -10,12 +10,14 @@ import (
 )
 
 type Material struct {
-	Pattern    Pattern
-	ambient    float64
-	diffuse    float64
-	specular   float64
-	shininess  float64
-	reflective float64
+	Pattern         Pattern
+	ambient         float64
+	diffuse         float64
+	specular        float64
+	shininess       float64
+	reflective      float64
+	transparency    float64
+	refractiveIndex float64
 }
 
 type MaterialBuilder struct {
@@ -28,6 +30,22 @@ func NewDefaultBuilder() *MaterialBuilder {
 
 func NewBuilder(m Material) *MaterialBuilder {
 	return &MaterialBuilder{m}
+}
+
+func (b *MaterialBuilder) WithRefractiveIndex(ri float64) *MaterialBuilder {
+	if ri < 0 {
+		panic("Refractive index can't be negative")
+	}
+	b.m.refractiveIndex = ri
+	return b
+}
+
+func (b *MaterialBuilder) WithTransparency(t float64) *MaterialBuilder {
+	if t < 0 {
+		panic("Transparency can't be negative")
+	}
+	b.m.transparency = t
+	return b
 }
 
 func (b *MaterialBuilder) WithAmbient(a float64) *MaterialBuilder {
@@ -90,30 +108,39 @@ func (b *MaterialBuilder) Build() Material {
 	return b.m
 }
 
-func New(p Pattern, ambient, diffuse, specular, shininess, reflective float64) Material {
+func New(p Pattern, ambient, diffuse, specular, shininess, reflective, transparency, refractiveIndex float64) Material {
 	if (ambient < 0 || ambient > 1) ||
 		(diffuse < 0 || diffuse > 1) ||
 		(specular < 0 || specular > 1) ||
+		(reflective < 0 || reflective > 1) ||
+		transparency < 0 ||
+		refractiveIndex < 0 ||
 		shininess < 0 {
 		panic(fmt.Sprintf("Invalid values for reflection parameters: (%f,%f,%f,%f)", ambient, diffuse, specular, shininess))
 	}
 
 	return Material{
-		Pattern:    p,
-		ambient:    ambient,
-		diffuse:    diffuse,
-		specular:   specular,
-		shininess:  shininess,
-		reflective: reflective,
+		Pattern:         p,
+		ambient:         ambient,
+		diffuse:         diffuse,
+		specular:        specular,
+		shininess:       shininess,
+		reflective:      reflective,
+		transparency:    transparency,
+		refractiveIndex: refractiveIndex,
 	}
 }
 
 func Default() Material {
-	return New(NewSolidPattern(tuple.White), 0.1, 0.9, 0.9, 200.0, 0.0)
+	return New(NewSolidPattern(tuple.White), 0.1, 0.9, 0.9, 200.0, 0.0, 0.0, 1.0)
 }
 
 func (m Material) Reflective() float64 {
 	return m.reflective
+}
+
+func (m Material) RefractiveIndex() float64 {
+	return m.refractiveIndex
 }
 
 func (m Material) Lighting(objTransform matrix.Matrix, l fixtures.PointLight, point tuple.Tuple, eyev, normal tuple.Tuple, inShadow bool) tuple.Color {

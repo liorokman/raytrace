@@ -20,6 +20,17 @@ type Shape interface {
 	LocalIntersect(direction tuple.Tuple, origin tuple.Tuple) []float64
 }
 
+type ShapeList []Shape
+
+func (s ShapeList) Find(needle Shape) int {
+	for i := range s {
+		if s[i].ID() == needle.ID() {
+			return i
+		}
+	}
+	return -1
+}
+
 type shapeDetails interface {
 	shapeIdPrefix() string
 	normalAt(tuple.Tuple) tuple.Tuple

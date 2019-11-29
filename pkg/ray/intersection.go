@@ -15,12 +15,14 @@ type Intersection struct {
 
 type Computation struct {
 	Intersection
-	Point     tuple.Tuple
-	EyeV      tuple.Tuple
-	NormalV   tuple.Tuple
-	OverPoint tuple.Tuple
-	Inside    bool
-	ReflectV  tuple.Tuple
+	Point      tuple.Tuple
+	EyeV       tuple.Tuple
+	NormalV    tuple.Tuple
+	OverPoint  tuple.Tuple
+	UnderPoint tuple.Tuple
+	Inside     bool
+	ReflectV   tuple.Tuple
+	N1, N2     float64
 }
 
 type ByTime []Intersection
@@ -48,7 +50,11 @@ func Hit(i ...Intersection) (Intersection, bool) {
 	return Intersection{}, false
 }
 
-func (i Intersection) PrepareComputation(r Ray) Computation {
+func (i Intersection) Equals(other Intersection) bool {
+	return utils.FloatEqual(i.T, other.T) && i.Shape.ID() == other.Shape.ID()
+}
+
+func (i Intersection) PrepareComputation(r Ray, xs ...Intersection) Computation {
 	retval := Computation{
 		Intersection: i,
 		Point:        r.Position(i.T),
@@ -61,7 +67,32 @@ func (i Intersection) PrepareComputation(r Ray) Computation {
 		retval.NormalV = retval.NormalV.Mult(-1)
 	}
 	retval.OverPoint = retval.Point.Add(retval.NormalV.Mult(utils.EPSILON))
+	retval.UnderPoint = retval.Point.Subtract(retval.NormalV.Mult(utils.EPSILON))
 	retval.ReflectV = r.Direction.Reflect(retval.NormalV)
 
+	containers := shapes.ShapeList{}
+	for currXS := range xs {
+		if xs[currXS].Equals(i) {
+			if len(containers) == 0 {
+				retval.N1 = 1.0
+			} else {
+				retval.N1 = containers[len(containers)-1].GetMaterial().RefractiveIndex()
+			}
+		}
+		if place := containers.Find(xs[currXS].Shape); place >= 0 {
+			copy(containers[place:], containers[place+1:])
+			containers = containers[:len(containers)-1]
+		} else {
+			containers = append(containers, xs[currXS].Shape)
+		}
+		if xs[currXS].Equals(i) {
+			if len(containers) == 0 {
+				retval.N2 = 1.0
+			} else {
+				retval.N2 = containers[len(containers)-1].GetMaterial().RefractiveIndex()
+			}
+			break
+		}
+	}
 	return retval
 }

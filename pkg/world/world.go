@@ -93,7 +93,7 @@ func (w *World) ReflectedColor(comps ray.Computation, depth int) tuple.Color {
 func (w *World) ColorAt(r ray.Ray, depth int) tuple.Color {
 	xs := w.IntersectRay(r)
 	if h, ok := ray.Hit(xs...); ok {
-		comps := h.PrepareComputation(r)
+		comps := h.PrepareComputation(r, xs...)
 		return w.ShadeHit(comps, depth)
 	} else {
 		return tuple.Black
