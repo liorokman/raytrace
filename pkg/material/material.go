@@ -135,6 +135,14 @@ func Default() Material {
 	return New(NewSolidPattern(tuple.White), 0.1, 0.9, 0.9, 200.0, 0.0, 0.0, 1.0)
 }
 
+func Glass() Material {
+	return New(NewSolidPattern(tuple.White), 0.1, 0.1, 0.9, 200.0, 0.0, 1.0, 1.5)
+}
+
+func (m Material) Transparency() float64 {
+	return m.transparency
+}
+
 func (m Material) Reflective() float64 {
 	return m.reflective
 }

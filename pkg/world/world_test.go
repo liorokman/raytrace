@@ -188,3 +188,94 @@ func TestShadeHit(t *testing.T) {
 	g.Expect(c.Equals(tuple.NewColor(0.1, 0.1, 0.1))).To(BeTrue())
 
 }
+
+func TestRefractions(t *testing.T) {
+	g := NewGomegaWithT(t)
+	w := defaultWorld()
+
+	r, err := ray.New(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 0, 1))
+	g.Expect(err).To(BeNil())
+
+	xs := []ray.Intersection{
+		{4, w.Shape(0)},
+		{6, w.Shape(0)},
+	}
+	comps := xs[0].PrepareComputation(r, xs...)
+	c := w.RefractedColor(comps, 5)
+	g.Expect(c).To(Equal(tuple.Black))
+
+	w.SetShape(0, shapes.NewGlassSphere())
+	xs = []ray.Intersection{
+		{4, w.Shape(0)},
+		{6, w.Shape(0)},
+	}
+	comps = xs[0].PrepareComputation(r, xs...)
+	c = w.RefractedColor(comps, 0)
+	g.Expect(c).To(Equal(tuple.Black))
+
+	// Test total internal reflection
+	r, err = ray.New(tuple.NewPoint(0, 0, math.Sqrt(2.0)/2.0), tuple.NewVector(0, 1, 0))
+	g.Expect(err).To(BeNil())
+	xs = []ray.Intersection{
+		{-math.Sqrt(2.0) / 2.0, w.Shape(0)},
+		{math.Sqrt(2.0) / 2.0, w.Shape(0)},
+	}
+	comps = xs[1].PrepareComputation(r, xs...)
+	c = w.RefractedColor(comps, 5)
+	g.Expect(c).To(Equal(tuple.Black))
+
+	// Test a refrected ray
+	mb := material.NewDefaultBuilder()
+	w.SetShape(0, shapes.NewSphere().WithMaterial(mb.WithAmbient(1.0).WithPattern(material.NewTestPattern().WithTransform(matrix.NewIdentity())).Build()))
+	w.SetShape(1, shapes.NewGlassSphere())
+	r, err = ray.New(tuple.NewPoint(0, 0, 0.1), tuple.NewVector(0, 1, 0))
+	g.Expect(err).To(BeNil())
+	xs = []ray.Intersection{
+		{-0.9899, w.Shape(0)},
+		{-0.4899, w.Shape(1)},
+		{0.4899, w.Shape(1)},
+		{0.9899, w.Shape(0)},
+	}
+	comps = xs[2].PrepareComputation(r, xs...)
+	c = w.RefractedColor(comps, 5)
+	g.Expect(c.Equals(tuple.NewColor(0, 0.99888, 0.04721))).To(BeTrue())
+}
+
+func TestRefractedShader(t *testing.T) {
+	g := NewGomegaWithT(t)
+	w := defaultWorld()
+	mb := material.NewDefaultBuilder()
+	floor := shapes.NewPlane().WithTransform(matrix.NewTranslation(0, -1, 0)).WithMaterial(mb.WithTransparency(0.5).WithRefractiveIndex(1.5).Build())
+	ball := shapes.NewSphere().WithTransform(matrix.NewTranslation(0, -3.5, -0.5)).WithMaterial(mb.Reset().WithColor(tuple.Red).WithAmbient(0.5).Build())
+	w.AddShapes(floor, ball)
+
+	r, err := ray.New(tuple.NewPoint(0, 0, -3), tuple.NewVector(0, -math.Sqrt(2.0)/2.0, math.Sqrt(2.0)/2.0))
+	g.Expect(err).To(BeNil())
+
+	xs := []ray.Intersection{
+		{math.Sqrt(2.0), floor},
+	}
+	comps := xs[0].PrepareComputation(r, xs...)
+	c := w.ShadeHit(comps, 5)
+	g.Expect(c.Equals(tuple.NewColor(0.93642, 0.68642, 0.68642))).To(BeTrue())
+}
+
+func TestSchlickEnabledShader(t *testing.T) {
+	g := NewGomegaWithT(t)
+	w := defaultWorld()
+	mb := material.NewDefaultBuilder()
+	floor := shapes.NewPlane().WithTransform(matrix.NewTranslation(0, -1, 0)).WithMaterial(mb.WithTransparency(0.5).WithRefractiveIndex(1.5).WithReflective(0.5).Build())
+	ball := shapes.NewSphere().WithTransform(matrix.NewTranslation(0, -3.5, -0.5)).WithMaterial(mb.Reset().WithColor(tuple.Red).WithAmbient(0.5).Build())
+	w.AddShapes(floor, ball)
+
+	r, err := ray.New(tuple.NewPoint(0, 0, -3), tuple.NewVector(0, -math.Sqrt(2.0)/2.0, math.Sqrt(2.0)/2.0))
+	g.Expect(err).To(BeNil())
+
+	xs := []ray.Intersection{
+		{math.Sqrt(2.0), floor},
+	}
+	comps := xs[0].PrepareComputation(r, xs...)
+	c := w.ShadeHit(comps, 5)
+	g.Expect(c.Equals(tuple.NewColor(0.93391, 0.69643, 0.69243))).To(BeTrue())
+
+}

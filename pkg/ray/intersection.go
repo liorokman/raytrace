@@ -96,3 +96,17 @@ func (i Intersection) PrepareComputation(r Ray, xs ...Intersection) Computation 
 	}
 	return retval
 }
+
+func (c Computation) Schlick() float64 {
+	cos := c.EyeV.Dot(c.NormalV)
+	if c.N1 > c.N2 {
+		n := c.N1 / c.N2
+		sin2t := n * n * (1.0 - cos*cos)
+		if sin2t > 1.0 {
+			return 1.0
+		}
+		cos = math.Sqrt(1.0 - sin2t)
+	}
+	r0 := math.Pow((c.N1-c.N2)/(c.N1+c.N2), 2)
+	return r0 + (1-r0)*math.Pow(1-cos, 5)
+}

@@ -16,8 +16,7 @@ func NewSphere() Shape {
 }
 
 func NewGlassSphere() Shape {
-	mb := material.NewDefaultBuilder().WithTransparency(1.0).WithRefractiveIndex(1.5)
-	return newShape(mb.Build(), matrix.NewIdentity(), sphere{})
+	return newShape(material.Glass(), matrix.NewIdentity(), sphere{})
 }
 
 func (s sphere) shapeIdPrefix() string {

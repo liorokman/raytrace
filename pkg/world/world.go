@@ -2,6 +2,7 @@ package world
 
 import (
 	"fmt"
+	"math"
 	"sort"
 	"sync"
 
@@ -66,7 +67,14 @@ func (w *World) ShadeHit(comps ray.Computation, depth int) tuple.Color {
 		go func(ind int, light fixtures.PointLight) {
 			shadowed := w.IsShadowed(comps.OverPoint, ind)
 			colorFromL[ind] = comps.Shape.GetMaterial().Lighting(comps.Shape.GetTransform(), light, comps.Point, comps.EyeV, comps.NormalV, shadowed)
-			colorFromL[ind] = colorFromL[ind].Add(w.ReflectedColor(comps, depth))
+			reflect := w.ReflectedColor(comps, depth)
+			refract := w.RefractedColor(comps, depth)
+			if comps.Shape.GetMaterial().Reflective() > 0.0 && comps.Shape.GetMaterial().Transparency() > 0.0 {
+				reflectence := comps.Schlick()
+				colorFromL[ind] = colorFromL[ind].Add(reflect.Mult(reflectence)).Add(refract.Mult((1 - reflectence)))
+			} else {
+				colorFromL[ind] = colorFromL[ind].Add(reflect).Add(refract)
+			}
 			wg.Done()
 		}(i, l)
 	}
@@ -76,6 +84,26 @@ func (w *World) ShadeHit(comps ray.Computation, depth int) tuple.Color {
 		retval = retval.Add(c)
 	}
 	return retval
+}
+
+func (w *World) RefractedColor(comps ray.Computation, depth int) tuple.Color {
+	if depth == 0 || comps.Shape.GetMaterial().Transparency() == 0 {
+		return tuple.Black
+	}
+	nRatio := comps.N1 / comps.N2
+	cosI := comps.EyeV.Dot(comps.NormalV)
+	sin2t := math.Pow(nRatio, 2) * (1 - math.Pow(cosI, 2))
+	if sin2t > 1 {
+		// This means that this case is total internal reflection
+		return tuple.Black
+	}
+	cosT := math.Sqrt(1.0 - sin2t)
+	direction := comps.NormalV.Mult(nRatio*cosI - cosT).Subtract(comps.EyeV.Mult(nRatio))
+	refractRay, err := ray.New(comps.UnderPoint, direction)
+	if err != nil {
+		panic(err)
+	}
+	return w.ColorAt(refractRay, depth-1).Mult(comps.Shape.GetMaterial().Transparency())
 }
 
 func (w *World) ReflectedColor(comps ray.Computation, depth int) tuple.Color {

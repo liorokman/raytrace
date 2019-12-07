@@ -123,3 +123,13 @@ func (p checkerPattern) ColorAt(point tuple.Tuple) tuple.Color {
 	c := math.Abs(math.Floor(point.X()+utils.EPSILON) + math.Floor(point.Y()+utils.EPSILON) + math.Floor(point.Z()+utils.EPSILON))
 	return p.colors[int(c)%2]
 }
+
+type testPattern struct{}
+
+func NewTestPattern() Pattern {
+	return newPattern(testPattern{})
+}
+
+func (p testPattern) ColorAt(point tuple.Tuple) tuple.Color {
+	return tuple.NewColor(point.X(), point.Y(), point.Z())
+}

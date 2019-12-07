@@ -31,8 +31,8 @@ func main() {
 
 	w := world.New()
 	//	w.Lights = append(w.Lights, fixtures.NewPointLight(tuple.NewPoint(10, 10, -15), tuple.NewColor(1, 0.5, 0.5)))
-	//mb := material.NewDefaultBuilder().WithPattern(material.NewCheckerPattern(tuple.Red, tuple.NewColor(0.1, 0.1, 1))).WithSpecular(0).WithReflective(0.8)
-	mb := material.NewDefaultBuilder().WithPattern(material.NewSolidPattern(tuple.White)).WithSpecular(0).WithReflective(1).WithDiffuse(1)
+	mb := material.NewDefaultBuilder().WithPattern(material.NewCheckerPattern(tuple.Blue, tuple.Green)).WithSpecular(0).WithReflective(0.8)
+	//mb := material.NewDefaultBuilder().WithPattern(material.NewSolidPattern(tuple.White)).WithSpecular(0).WithReflective(1).WithDiffuse(1)
 	/*
 		w.AddShapes(shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewScale(10, 0.01, 10)),
 			shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(0, 0, 5).RotateY(-math.Pi/4).RotateX(math.Pi/2).Scale(10, 0.01, 10)),
@@ -47,6 +47,11 @@ func main() {
 	w.AddShapes(shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(1.5, 0.5, -0.5).Scale(0.5, 0.5, 0.5)))
 	mb.WithColor(tuple.NewColor(1, 0.8, 0.1))
 	w.AddShapes(shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(-1.5, 0.33, -0.75).Scale(0.33, 0.33, 0.33)))
+
+	mb.ResetTo(material.Glass()).WithReflective(0.9)
+	w.AddShapes(shapes.NewGlassSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(0, 3, 0).Scale(1.5, 1.5, 1.5)))
+	mb.Reset().WithPattern(material.NewGradientPattern(tuple.Red, tuple.NewColor(0.5, 0.1, 0.0)))
+	w.AddShapes(shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(0, 3, 0).Scale(0.5, 0.5, 0.5)))
 
 	cam := camera.NewCamera(uint32(*hsize), uint32(*vsize), math.Pi/3.0).
 		WithTransform(camera.ViewTransformation(

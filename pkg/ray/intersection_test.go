@@ -118,3 +118,36 @@ func TestFindingN1N2(t *testing.T) {
 		g.Expect(comps.N2).To(BeNumerically("==", expected[i].n2))
 	}
 }
+
+func TestSchlick(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	// Total internal reflection
+	sphere := shapes.NewGlassSphere()
+	r, err := New(tuple.NewPoint(0, 0, math.Sqrt(2)/2.0), tuple.NewVector(0, 1, 0))
+	g.Expect(err).To(BeNil())
+	xs := []Intersection{
+		{-math.Sqrt(2) / 2, sphere},
+		{math.Sqrt(2) / 2, sphere},
+	}
+	comps := xs[1].PrepareComputation(r, xs...)
+	reflectence := comps.Schlick()
+	g.Expect(reflectence).To(Equal(1.0))
+
+	// Reflectence of perpendicular viewing angle
+	r, err = New(tuple.NewPoint(0, 0, 0), tuple.NewVector(0, 1, 0))
+	g.Expect(err).To(BeNil())
+	xs = []Intersection{{-1, sphere}, {1, sphere}}
+	comps = xs[1].PrepareComputation(r, xs...)
+	reflectence = comps.Schlick()
+	g.Expect(reflectence).To(BeNumerically("~", 0.04))
+
+	// Reflectence when n2 > n1
+	r, err = New(tuple.NewPoint(0, 0.99, -2), tuple.NewVector(0, 0, 1))
+	g.Expect(err).To(BeNil())
+	xs = []Intersection{{1.8589, sphere}}
+	comps = xs[0].PrepareComputation(r, xs...)
+	reflectence = comps.Schlick()
+	g.Expect(reflectence).To(BeNumerically("~", 0.4887308101))
+
+}
