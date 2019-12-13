@@ -53,6 +53,8 @@ func main() {
 	mb.Reset().WithPattern(material.NewGradientPattern(tuple.Red, tuple.NewColor(0.5, 0.1, 0.0)))
 	w.AddShapes(shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(0, 3, 0).Scale(0.5, 0.5, 0.5)))
 
+	w.AddShapes(shapes.NewCube().WithTransform(matrix.NewTranslation(4, 0, 0)))
+
 	cam := camera.NewCamera(uint32(*hsize), uint32(*vsize), math.Pi/3.0).
 		WithTransform(camera.ViewTransformation(
 			tuple.NewPoint(-5, 1.5, -5),
