@@ -3,6 +3,7 @@ package world
 import (
 	"fmt"
 	"io/ioutil"
+	"math"
 
 	"gopkg.in/yaml.v2"
 
@@ -21,9 +22,10 @@ type world struct {
 
 const (
 	//shapes
-	SPHERE = "sphere"
-	PLANE  = "plane"
-	CUBE   = "cube"
+	SPHERE   = "sphere"
+	PLANE    = "plane"
+	CUBE     = "cube"
+	CYLINDER = "cylinder"
 
 	// patterns
 	SOLID    = "solid"
@@ -68,7 +70,7 @@ func (f fixture) toFixture() (fixtures.PointLight, error) {
 	}
 }
 
-func newShape(sType string) (shapes.Shape, error) {
+func newShape(sType string, params map[string]interface{}) (shapes.Shape, error) {
 	switch sType {
 	case SPHERE:
 		return shapes.NewSphere(), nil
@@ -76,6 +78,32 @@ func newShape(sType string) (shapes.Shape, error) {
 		return shapes.NewPlane(), nil
 	case CUBE:
 		return shapes.NewCube(), nil
+	case CYLINDER:
+		closed := false
+		min := math.Inf(-1)
+		max := math.Inf(1)
+		if val, ok := params["closed"]; ok {
+			if boolVal, ok := val.(bool); ok {
+				closed = boolVal
+			} else {
+				return nil, fmt.Errorf("Closed param for cylinder should be a bool")
+			}
+		}
+		if val, ok := params["minimum"]; ok {
+			if floatVal, ok := val.(float64); ok {
+				min = floatVal
+			} else {
+				return nil, fmt.Errorf("Minimum param for cylinder should be a float64")
+			}
+		}
+		if val, ok := params["maximum"]; ok {
+			if floatVal, ok := val.(float64); ok {
+				max = floatVal
+			} else {
+				return nil, fmt.Errorf("Maximum param for cylinder should be a float64")
+			}
+		}
+		return shapes.NewConstrainedCylinder(min, max, closed), nil
 	default:
 		return nil, fmt.Errorf("Unknown shape %s", sType)
 	}
@@ -147,6 +175,7 @@ type object struct {
 	Type      string      `yaml:"type"`
 	Transform []transform `yaml:",flow"`
 	Material  materialInput
+	Params    map[string]interface{} `yaml:"params,omitempty"`
 }
 
 type transform struct {
@@ -211,7 +240,7 @@ func NewWorld(file string) (*World, Cam, error) {
 		Lights:  []fixtures.PointLight{},
 	}
 	for _, o := range w.Objects {
-		s, err := newShape(o.Type)
+		s, err := newShape(o.Type, o.Params)
 		if err != nil {
 			return nil, Cam{}, err
 		}
