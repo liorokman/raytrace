@@ -1,0 +1,150 @@
+#default =  return New(NewSolidPattern(tuple.White), 0.1, 0.9, 0.9, 200.0, 0.0, 0.0, 1.0)
+#glass = return New(NewSolidPattern(tuple.White), 0.1, 0.1, 0.9, 200.0, 0.0, 1.0, 1.5)
+---
+fixtures:
+- type: pointlight
+  position: [ -10, 10, -10 ]
+  color: [ 1, 1, 1 ]
+objects:
+- type: plane 
+  transform:
+  - type: translate
+    params: [ 0, 0, -10 ] 
+  material:
+    pattern:
+      type: checker
+      colors:
+      - [ 0, 0, 1]
+      - [ 0, 1, 0]
+    ambient: 0.1
+    diffuse: 0.9
+    specular: 0
+    shininess: 200
+    reflective: 0.8
+    transparency: 0.0
+    refractiveIndex: 1.0
+- type: sphere
+  transform:
+  - type: translate
+    params: [ -1.5, 1, 0.5 ]
+  material:
+    pattern:
+      type: ring
+      colors:
+      - [ 0, 1, 0 ] # green
+      - [ 0, 0, 1 ] # blue
+      transform:
+      - type: translate
+        params: [ 1.5, 1.5, 1.5 ]
+      - type: scale
+        params: [ 0.2, 0.2, 0.2 ]
+    ambient: 0.1
+    diffuse: 0.7
+    specular: 0.3
+    shininess: 200
+    reflective: 0.0
+    transparency: 0.0
+    refractiveIndex: 1.0
+- type: sphere
+  transform:
+  - type: translate
+    params: [ 1.5, 0.5, -0.5 ]
+  - type: scale
+    params: [ 0.5, 0.5, 0.5 ]
+  material:
+    pattern:
+      type: gradient
+      colors:
+      - [ 0.5, 1, 0.1 ] 
+      - [ 0.15, 0, 0.9 ] 
+      transform:
+      - type: translate
+        params: [ 1.5, 1.5, 1.5 ]
+    ambient: 0.1
+    diffuse: 0.7
+    specular: 0.3
+    shininess: 200
+    reflective: 0.0
+    transparency: 0.0
+    refractiveIndex: 1.0
+- type: sphere
+  transform:
+  - type: translate
+    params: [ -1.5, 0.33, -0.75 ]
+  - type: scale
+    params: [ 0.33, 0.33,  0.33 ]
+  material:
+    pattern:
+      type: solid
+      colors:
+      - [ 1, 0.8, 0.1 ] 
+      transform:
+      - type: translate
+        params: [ 1.5, 1.5, 1.5 ]
+    ambient: 0.1
+    diffuse: 0.7
+    specular: 0.3
+    shininess: 200
+    reflective: 0.0
+    transparency: 0.0
+    refractiveIndex: 1.0
+- type: sphere
+  transform:
+  - type: translate
+    params: [ 0, 3, 0 ]
+  - type: scale
+    params: [ 1.5, 1.5, 1.5 ]
+  material:
+    pattern:
+      type: solid
+      colors:
+      - [ 1, 1, 1 ] 
+    ambient: 0.1
+    diffuse: 0.1
+    specular: 0.9
+    shininess: 200
+    reflective: 0.9
+    transparency: 1.0
+    refractiveIndex: 1.5
+- type: sphere
+  transform:
+  - type: translate
+    params: [ 0, 3, 0 ]
+  - type: scale
+    params: [ 0.5, 0.5, 0.5 ]
+  material:
+    pattern:
+      type: gradient
+      colors:
+      - [ 1, 0, 0 ] 
+      - [ 0.5, 0.1, 0 ] 
+    ambient: 0.1
+    diffuse: 0.9
+    specular: 0.9
+    shininess: 200
+    reflective: 0.0
+    transparency: 0.0
+    refractiveIndex: 1.0 
+- type: cube
+  transform:
+  - type: translate
+    params: [ 4, 1, 0 ]
+  material:
+    pattern:
+      type: solid
+      colors:
+      - [ 1, 1, 1 ] 
+    ambient: 0.1
+    diffuse: 0.9
+    specular: 0.9
+    shininess: 200
+    reflective: 0.0
+    transparency: 0.0
+    refractiveIndex: 1.0 
+camera:
+  hsize: 400
+  vsize: 400
+  fieldOfView: 1.0471975512 # Pi/3.0
+  from: [ -5, 1.5, -5 ] # point
+  to: [ 0, 1, 0 ] # point
+  up: [0, 1, 0 ] # vector

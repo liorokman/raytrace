@@ -3,14 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"math"
 	"os"
 
 	"github.com/liorokman/raytrace/pkg/camera"
-	//"github.com/liorokman/raytrace/pkg/fixtures"
-	"github.com/liorokman/raytrace/pkg/material"
-	"github.com/liorokman/raytrace/pkg/matrix"
-	"github.com/liorokman/raytrace/pkg/shapes"
 	"github.com/liorokman/raytrace/pkg/tuple"
 	"github.com/liorokman/raytrace/pkg/world"
 )
@@ -18,48 +13,35 @@ import (
 func main() {
 
 	var filename = flag.String("filename", "", "The file to write output to")
-	var hsize = flag.Uint("hsize", 100, "Horizontal canvas size")
-	var vsize = flag.Uint("vsize", 50, "Vertical canvas size")
+	var scenefile = flag.String("scene", "", "The scene input file")
 	var frame = flag.Bool("frame", false, "Frame the canvas")
 
 	flag.Parse()
+	if *scenefile == "" {
+		fmt.Printf("Must provide a scene filename.\n")
+		flag.Usage()
+		os.Exit(1)
+	}
 	if *filename == "" {
-		fmt.Printf("Must provide a filename.\n")
+		fmt.Printf("Must provide an output filename.\n")
 		flag.Usage()
 		os.Exit(1)
 	}
 
-	w := world.New()
-	//	w.Lights = append(w.Lights, fixtures.NewPointLight(tuple.NewPoint(10, 10, -15), tuple.NewColor(1, 0.5, 0.5)))
-	mb := material.NewDefaultBuilder().WithPattern(material.NewCheckerPattern(tuple.Blue, tuple.Green)).WithSpecular(0).WithReflective(0.8)
-	//mb := material.NewDefaultBuilder().WithPattern(material.NewSolidPattern(tuple.White)).WithSpecular(0).WithReflective(1).WithDiffuse(1)
-	/*
-		w.AddShapes(shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewScale(10, 0.01, 10)),
-			shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(0, 0, 5).RotateY(-math.Pi/4).RotateX(math.Pi/2).Scale(10, 0.01, 10)),
-			shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(0, 0, 5).RotateY(math.Pi/4).RotateX(math.Pi/2).Scale(10, 0.01, 10)))
-	*/
-	w.AddShapes(shapes.NewPlane().WithTransform(matrix.NewTranslation(0, 0, -10)).WithMaterial(mb.Build()))
+	w, camInput, err := world.NewWorld(*scenefile)
+	if err != nil {
+		fmt.Printf("Error parsing the scene file: %s", err)
+		os.Exit(1)
+	}
 
-	mb.Reset().WithPattern(material.NewRingPattern(tuple.Green, tuple.Blue).WithTransform(matrix.NewTranslation(1.5, 1.5, 1.5).Scale(0.2, 0.2, 0.2))).WithDiffuse(0.7).WithSpecular(0.3)
-	w.AddShapes(shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(-1.5, 1, 0.5)))
+	fmt.Printf("World is %#v\n", w)
+	fmt.Printf("Cam input is %#v\n", camInput)
 
-	mb.WithPattern(material.NewGradientPattern(tuple.NewColor(0.5, 1, 0.1), tuple.NewColor(0.15, 0, 0.9)).WithTransform(matrix.NewTranslation(1.5, 1.5, 1.5)))
-	w.AddShapes(shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(1.5, 0.5, -0.5).Scale(0.5, 0.5, 0.5)))
-	mb.WithColor(tuple.NewColor(1, 0.8, 0.1))
-	w.AddShapes(shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(-1.5, 0.33, -0.75).Scale(0.33, 0.33, 0.33)))
-
-	mb.ResetTo(material.Glass()).WithReflective(0.9)
-	w.AddShapes(shapes.NewGlassSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(0, 3, 0).Scale(1.5, 1.5, 1.5)))
-	mb.Reset().WithPattern(material.NewGradientPattern(tuple.Red, tuple.NewColor(0.5, 0.1, 0.0)))
-	w.AddShapes(shapes.NewSphere().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(0, 3, 0).Scale(0.5, 0.5, 0.5)))
-
-	w.AddShapes(shapes.NewCube().WithTransform(matrix.NewTranslation(4, 0, 0)))
-
-	cam := camera.NewCamera(uint32(*hsize), uint32(*vsize), math.Pi/3.0).
+	cam := camera.NewCamera(camInput.Hsize, camInput.Vsize, camInput.FieldOfView).
 		WithTransform(camera.ViewTransformation(
-			tuple.NewPoint(-5, 1.5, -5),
-			tuple.NewPoint(0, 1, 0),
-			tuple.NewVector(0, 1, 0)))
+			camInput.From.ToPoint(),
+			camInput.To.ToPoint(),
+			camInput.Up.ToVector()))
 	fmt.Printf("Pixelsize: %v\n", cam.PixelSize())
 	image := cam.Render(w)
 
