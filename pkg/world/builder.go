@@ -70,6 +70,17 @@ func (f fixture) toFixture() (fixtures.PointLight, error) {
 	}
 }
 
+func extractFloatParam(bag map[string]interface{}, name string) (float64, bool, error) {
+	if val, ok := bag[name]; ok {
+		if fval, ok := val.(float64); ok {
+			return fval, true, nil
+		}
+		return 0, false, fmt.Errorf("%s found but is not a float64 value", name)
+	} else {
+		return 0, false, nil
+	}
+}
+
 func newShape(sType string, params map[string]interface{}) (shapes.Shape, error) {
 	switch sType {
 	case SPHERE:
@@ -89,19 +100,17 @@ func newShape(sType string, params map[string]interface{}) (shapes.Shape, error)
 				return nil, fmt.Errorf("Closed param for cylinder should be a bool")
 			}
 		}
-		if val, ok := params["minimum"]; ok {
-			if floatVal, ok := val.(float64); ok {
-				min = floatVal
-			} else {
-				return nil, fmt.Errorf("Minimum param for cylinder should be a float64")
-			}
+		val, ok, err := extractFloatParam(params, "minimum")
+		if err != nil {
+			return nil, err
+		} else if ok {
+			min = val
 		}
-		if val, ok := params["maximum"]; ok {
-			if floatVal, ok := val.(float64); ok {
-				max = floatVal
-			} else {
-				return nil, fmt.Errorf("Maximum param for cylinder should be a float64")
-			}
+		val, ok, err = extractFloatParam(params, "maximum")
+		if err != nil {
+			return nil, err
+		} else if ok {
+			max = val
 		}
 		return shapes.NewConstrainedCylinder(min, max, closed), nil
 	default:
@@ -109,15 +118,100 @@ func newShape(sType string, params map[string]interface{}) (shapes.Shape, error)
 	}
 }
 
+const (
+	AMBIENT         = "ambient"
+	DIFFUSE         = "diffuse"
+	SPECULAR        = "specular"
+	SHININESS       = "shininess"
+	REFLECTIVE      = "reflective"
+	TRANSPARENCY    = "transparency"
+	REFRACTIVEINDEX = "refractiveIndex"
+
+	DEFAULTMATERIAL = "default"
+	GLASSMATERIAL   = "glass"
+)
+
 type materialInput struct {
-	Pattern         pattern
-	Ambient         float64
-	Diffuse         float64
-	Specular        float64
-	Shininess       float64
-	Reflective      float64
-	Transparency    float64
-	RefractiveIndex float64 `yaml:"refractiveIndex"`
+	Pattern pattern
+	Params  map[string]interface{} `yaml:",inline"`
+}
+
+func (m materialInput) toMaterial() (material.Material, error) {
+	pat, err := m.Pattern.toPattern()
+	if err != nil {
+		return material.Material{}, err
+	}
+	finalTransform := matrix.NewIdentity()
+	for _, t := range m.Pattern.Transform {
+		if mat, err := t.toMatrix(); err != nil {
+			return material.Material{}, err
+		} else {
+			finalTransform = finalTransform.Multiply(mat)
+		}
+	}
+	pat = pat.WithTransform(finalTransform)
+	var mb *material.MaterialBuilder
+	if matType, ok := m.Params("preset"); ok {
+		if str, ok := matType.(string); ok {
+			switch str {
+			case DEFAULTMATERIAL:
+				mb = material.NewBuilder(material.Default())
+			case GLASSMATERIAL:
+				mb = material.NewBuilder(material.Glass())
+			default:
+				mb = material.NewBuilder(material.Default())
+			}
+		}
+	}
+	mb = mb.WithPattern(pat)
+	for k := range m.Params {
+		switch k {
+		case AMBIENT:
+			if val, ok, err := extractFloatParam(m.Params, AMBIENT); err != nil {
+				return material.Material{}, err
+			} else if ok {
+				mb.WithAmbient(val)
+			}
+		case DIFFUSE:
+			if val, ok, err := extractFloatParam(m.Params, DIFFUSE); err != nil {
+				return material.Material{}, err
+			} else if ok {
+				mb.WithDiffuse(val)
+			}
+		case SPECULAR:
+			if val, ok, err := extractFloatParam(m.Params, SPECULAR); err != nil {
+				return material.Material{}, err
+			} else if ok {
+				mb.WithSpecular(val)
+			}
+		case SHININESS:
+			if val, ok, err := extractFloatParam(m.Params, SHININESS); err != nil {
+				return material.Material{}, err
+			} else if ok {
+				mb.WithShininess(val)
+			}
+		case REFLECTIVE:
+			if val, ok, err := extractFloatParam(m.Params, REFLECTIVE); err != nil {
+				return material.Material{}, err
+			} else if ok {
+				mb.WithReflective(val)
+			}
+		case TRANSPARENCY:
+			if val, ok, err := extractFloatParam(m.Params, TRANSPARENCY); err != nil {
+				return material.Material{}, err
+			} else if ok {
+				mb.WithTransparency(val)
+			}
+		case REFRACTIVEINDEX:
+			if val, ok, err := extractFloatParam(m.Params, REFRACTIVEINDEX); err != nil {
+				return material.Material{}, err
+			} else if ok {
+				mb.WithRefractiveIndex(val)
+			}
+		}
+	}
+
+	return mb.Build(), nil
 }
 
 type pattern struct {
@@ -253,23 +347,11 @@ func NewWorld(file string) (*World, Cam, error) {
 			}
 		}
 		s = s.WithTransform(finalTransform)
-
-		pat, err := o.Material.Pattern.toPattern()
+		mat, err := o.Material.toMaterial()
 		if err != nil {
 			return nil, Cam{}, err
 		}
-		finalTransform = matrix.NewIdentity()
-		for _, t := range o.Material.Pattern.Transform {
-			if mat, err := t.toMatrix(); err != nil {
-				return nil, Cam{}, err
-			} else {
-				finalTransform = finalTransform.Multiply(mat)
-			}
-		}
-		pat = pat.WithTransform(finalTransform)
-		s = s.WithMaterial(material.New(pat, o.Material.Ambient, o.Material.Diffuse,
-			o.Material.Specular, o.Material.Shininess, o.Material.Reflective,
-			o.Material.Transparency, o.Material.RefractiveIndex))
+		s = s.WithMaterial(mat)
 
 		retval.AddShapes(s)
 	}
