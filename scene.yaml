@@ -19,13 +19,8 @@ objects:
       type: solid
       colors:
       - [ 0,0,1 ]
-    ambient: 0.1
-    diffuse: 0.9
     specular: 0.1
-    shininess: 200
-    reflective: 0.8
     transparency: 0.3
-    refractiveIndex: 1.0
 - type: plane 
   transform:
   - type: translate
@@ -36,13 +31,8 @@ objects:
       colors:
       - [ 0, 0, 1]
       - [ 0, 1, 0]
-    ambient: 0.1
-    diffuse: 0.9
-    specular: 0
-    shininess: 200
+    specular: 0.0
     reflective: 0.8
-    transparency: 0.0
-    refractiveIndex: 1.0
 - type: sphere
   transform:
   - type: translate
@@ -58,13 +48,8 @@ objects:
         params: [ 1.5, 1.5, 1.5 ]
       - type: scale
         params: [ 0.2, 0.2, 0.2 ]
-    ambient: 0.1
     diffuse: 0.7
     specular: 0.3
-    shininess: 200
-    reflective: 0.0
-    transparency: 0.0
-    refractiveIndex: 1.0
 - type: sphere
   transform:
   - type: translate
@@ -80,13 +65,8 @@ objects:
       transform:
       - type: translate
         params: [ 1.5, 1.5, 1.5 ]
-    ambient: 0.1
     diffuse: 0.7
     specular: 0.3
-    shininess: 200
-    reflective: 0.0
-    transparency: 0.0
-    refractiveIndex: 1.0
 - type: sphere
   transform:
   - type: translate
@@ -101,13 +81,8 @@ objects:
       transform:
       - type: translate
         params: [ 1.5, 1.5, 1.5 ]
-    ambient: 0.1
     diffuse: 0.7
     specular: 0.3
-    shininess: 200
-    reflective: 0.0
-    transparency: 0.0
-    refractiveIndex: 1.0
 - type: sphere
   transform:
   - type: translate
@@ -119,10 +94,7 @@ objects:
       type: solid
       colors:
       - [ 1, 1, 1 ] 
-    ambient: 0.1
     diffuse: 0.1
-    specular: 0.9
-    shininess: 200
     reflective: 0.9
     transparency: 1.0
     refractiveIndex: 1.5
@@ -138,13 +110,6 @@ objects:
       colors:
       - [ 1, 0, 0 ] 
       - [ 0.5, 0.1, 0 ] 
-    ambient: 0.1
-    diffuse: 0.9
-    specular: 0.9
-    shininess: 200
-    reflective: 0.0
-    transparency: 0.0
-    refractiveIndex: 1.0 
 - type: cube
   transform:
   - type: translate
@@ -154,13 +119,6 @@ objects:
       type: solid
       colors:
       - [ 1, 1, 1 ] 
-    ambient: 0.1
-    diffuse: 0.9
-    specular: 0.9
-    shininess: 200
-    reflective: 0.0
-    transparency: 0.0
-    refractiveIndex: 1.0 
 camera:
   hsize: 400
   vsize: 400
