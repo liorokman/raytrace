@@ -115,7 +115,7 @@ func TestShadeWorld(t *testing.T) {
 	r, e := ray.New(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 0, 1))
 	g.Expect(e).To(BeNil())
 
-	i := ray.Intersection{4, w.Shape(0)}
+	i := ray.Intersection{T: 4, Shape: w.Shape(0)}
 	comps := i.PrepareComputation(r)
 	c := w.ShadeHit(comps, 5)
 	g.Expect(c.Equals(tuple.NewColor(0.38066, 0.47583, 0.2855))).To(BeTrue())
@@ -123,7 +123,7 @@ func TestShadeWorld(t *testing.T) {
 	w.Lights[0] = fixtures.NewPointLight(tuple.NewPoint(0, 0.25, 0), tuple.NewColor(1, 1, 1))
 	r, e = ray.New(tuple.NewPoint(0, 0, 0), tuple.NewVector(0, 0, 1))
 	g.Expect(e).To(BeNil())
-	i = ray.Intersection{0.5, w.Shape(1)}
+	i = ray.Intersection{T: 0.5, Shape: w.Shape(1)}
 	comps = i.PrepareComputation(r)
 	c = w.ShadeHit(comps, 5)
 	g.Expect(c.Equals(tuple.NewColor(0.90498, 0.90498, 0.90498))).To(BeTrue())
@@ -180,7 +180,7 @@ func TestShadeHit(t *testing.T) {
 
 	r, err := ray.New(tuple.NewPoint(0, 0, 5), tuple.NewVector(0, 0, 1))
 	g.Expect(err).To(BeNil())
-	i := ray.Intersection{4, w.objects[1]}
+	i := ray.Intersection{T: 4, Shape: w.objects[1]}
 
 	comps := i.PrepareComputation(r)
 	c := w.ShadeHit(comps, 5)
@@ -197,8 +197,8 @@ func TestRefractions(t *testing.T) {
 	g.Expect(err).To(BeNil())
 
 	xs := []ray.Intersection{
-		{4, w.Shape(0)},
-		{6, w.Shape(0)},
+		{T: 4, Shape: w.Shape(0)},
+		{T: 6, Shape: w.Shape(0)},
 	}
 	comps := xs[0].PrepareComputation(r, xs...)
 	c := w.RefractedColor(comps, 5)
@@ -206,8 +206,8 @@ func TestRefractions(t *testing.T) {
 
 	w.SetShape(0, shapes.NewGlassSphere())
 	xs = []ray.Intersection{
-		{4, w.Shape(0)},
-		{6, w.Shape(0)},
+		{T: 4, Shape: w.Shape(0)},
+		{T: 6, Shape: w.Shape(0)},
 	}
 	comps = xs[0].PrepareComputation(r, xs...)
 	c = w.RefractedColor(comps, 0)
@@ -217,8 +217,8 @@ func TestRefractions(t *testing.T) {
 	r, err = ray.New(tuple.NewPoint(0, 0, math.Sqrt(2.0)/2.0), tuple.NewVector(0, 1, 0))
 	g.Expect(err).To(BeNil())
 	xs = []ray.Intersection{
-		{-math.Sqrt(2.0) / 2.0, w.Shape(0)},
-		{math.Sqrt(2.0) / 2.0, w.Shape(0)},
+		{T: -math.Sqrt(2.0) / 2.0, Shape: w.Shape(0)},
+		{T: math.Sqrt(2.0) / 2.0, Shape: w.Shape(0)},
 	}
 	comps = xs[1].PrepareComputation(r, xs...)
 	c = w.RefractedColor(comps, 5)
@@ -231,10 +231,10 @@ func TestRefractions(t *testing.T) {
 	r, err = ray.New(tuple.NewPoint(0, 0, 0.1), tuple.NewVector(0, 1, 0))
 	g.Expect(err).To(BeNil())
 	xs = []ray.Intersection{
-		{-0.9899, w.Shape(0)},
-		{-0.4899, w.Shape(1)},
-		{0.4899, w.Shape(1)},
-		{0.9899, w.Shape(0)},
+		{T: -0.9899, Shape: w.Shape(0)},
+		{T: -0.4899, Shape: w.Shape(1)},
+		{T: 0.4899, Shape: w.Shape(1)},
+		{T: 0.9899, Shape: w.Shape(0)},
 	}
 	comps = xs[2].PrepareComputation(r, xs...)
 	c = w.RefractedColor(comps, 5)
@@ -253,7 +253,7 @@ func TestRefractedShader(t *testing.T) {
 	g.Expect(err).To(BeNil())
 
 	xs := []ray.Intersection{
-		{math.Sqrt(2.0), floor},
+		{T: math.Sqrt(2.0), Shape: floor},
 	}
 	comps := xs[0].PrepareComputation(r, xs...)
 	c := w.ShadeHit(comps, 5)
@@ -272,7 +272,7 @@ func TestSchlickEnabledShader(t *testing.T) {
 	g.Expect(err).To(BeNil())
 
 	xs := []ray.Intersection{
-		{math.Sqrt(2.0), floor},
+		{T: math.Sqrt(2.0), Shape: floor},
 	}
 	comps := xs[0].PrepareComputation(r, xs...)
 	c := w.ShadeHit(comps, 5)
