@@ -1,8 +1,9 @@
 package camera
 
 import (
-	"fmt"
 	"math"
+	"runtime"
+	"sync"
 
 	"github.com/liorokman/raytrace/pkg/canvas"
 	"github.com/liorokman/raytrace/pkg/matrix"
@@ -92,22 +93,41 @@ func (c Camera) RayForPixel(px, py uint32) ray.Ray {
 	return ray
 }
 
+type unitOfWork struct {
+	x, y uint32
+}
+
+type queue chan unitOfWork
+
 func (c Camera) Render(w *world.World) canvas.Canvas {
-	count := c.hsize * c.vsize
-	mark := count / 100
 	image := canvas.New(c.hsize, c.vsize)
+
+	wg := sync.WaitGroup{}
+	q := make(queue, runtime.NumCPU())
+
+	for cpu := 0; cpu < runtime.NumCPU()/len(w.Lights); cpu++ {
+		wg.Add(1)
+		go func() {
+			for {
+				unit, ok := <-q
+				if !ok {
+					wg.Done()
+					return
+				}
+				ray := c.RayForPixel(unit.x, unit.y)
+				color := w.ColorAt(ray, 4)
+				image.SetPixel(unit.x, unit.y, color)
+			}
+		}()
+	}
+
 	for y := uint32(0); y < c.hsize; y++ {
 		for x := uint32(0); x < c.vsize; x++ {
-			ray := c.RayForPixel(x, y)
-			color := w.ColorAt(ray, 4)
-			image.SetPixel(x, y, color)
-			count--
-			if count%mark == 0 {
-				fmt.Printf(".")
-			}
+			q <- unitOfWork{x: x, y: y}
 		}
 	}
-	fmt.Printf("\n")
+	close(q)
+	wg.Wait()
 	return image
 }
 

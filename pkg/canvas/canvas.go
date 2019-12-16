@@ -2,10 +2,12 @@ package canvas
 
 import (
 	"fmt"
-	"github.com/liorokman/raytrace/pkg/tuple"
 	"io"
 	"math"
+	"sync"
 	"text/template"
+
+	"github.com/liorokman/raytrace/pkg/tuple"
 )
 
 type Canvas interface {
@@ -20,6 +22,7 @@ type canvas struct {
 	Data      []tuple.Color
 	TheWidth  uint32
 	TheHeight uint32
+	lock      sync.Mutex
 }
 
 func New(width, height uint32) *canvas {
@@ -43,6 +46,8 @@ func (c *canvas) calcPos(x, y uint32) uint32 {
 }
 
 func (c *canvas) GetPixel(x, y uint32) (tuple.Color, error) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
 	if x >= c.Width() || y >= c.Height() {
 		return tuple.NewColor(0, 0, 0), fmt.Errorf("(%v, %v) is outside of the canvas (%v, %v)", x, y, c.Width(), c.Height())
 	}
@@ -50,6 +55,8 @@ func (c *canvas) GetPixel(x, y uint32) (tuple.Color, error) {
 }
 
 func (c *canvas) SetPixel(x, y uint32, v tuple.Color) error {
+	c.lock.Lock()
+	defer c.lock.Unlock()
 	if x >= c.Width() || y >= c.Height() {
 		return fmt.Errorf("(%v, %v) is outside of the canvas (%v, %v)", x, y, c.Width(), c.Height())
 	}
@@ -58,6 +65,8 @@ func (c *canvas) SetPixel(x, y uint32, v tuple.Color) error {
 }
 
 func (c *canvas) WritePPM(wr io.Writer) error {
+	c.lock.Lock()
+	defer c.lock.Unlock()
 	ppmTemplate := `P3
 {{ .Width }} {{ .Height }}
 255{{- $pos := 0 }}{{$w := .Width}}
