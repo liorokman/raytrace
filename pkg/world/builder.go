@@ -26,6 +26,7 @@ const (
 	PLANE    = "plane"
 	CUBE     = "cube"
 	CYLINDER = "cylinder"
+	CONE     = "cone"
 
 	// patterns
 	SOLID    = "solid"
@@ -90,6 +91,8 @@ func newShape(sType string, params map[string]interface{}) (shapes.Shape, error)
 	case CUBE:
 		return shapes.NewCube(), nil
 	case CYLINDER:
+		fallthrough
+	case CONE:
 		closed := false
 		min := math.Inf(-1)
 		max := math.Inf(1)
@@ -97,7 +100,7 @@ func newShape(sType string, params map[string]interface{}) (shapes.Shape, error)
 			if boolVal, ok := val.(bool); ok {
 				closed = boolVal
 			} else {
-				return nil, fmt.Errorf("Closed param for cylinder should be a bool")
+				return nil, fmt.Errorf("Closed param for cylinder/cone should be a bool")
 			}
 		}
 		val, ok, err := extractFloatParam(params, "minimum")
@@ -112,7 +115,11 @@ func newShape(sType string, params map[string]interface{}) (shapes.Shape, error)
 		} else if ok {
 			max = val
 		}
-		return shapes.NewConstrainedCylinder(min, max, closed), nil
+		if sType == CONE {
+			return shapes.NewConstrainedCone(min, max, closed), nil
+		} else {
+			return shapes.NewConstrainedCylinder(min, max, closed), nil
+		}
 	default:
 		return nil, fmt.Errorf("Unknown shape %s", sType)
 	}
@@ -150,7 +157,7 @@ func (m materialInput) toMaterial() (material.Material, error) {
 		}
 	}
 	pat = pat.WithTransform(finalTransform)
-	var mb *material.MaterialBuilder
+	mb := material.NewBuilder(material.Default())
 	if matType, ok := m.Params["preset"]; ok {
 		if str, ok := matType.(string); ok {
 			switch str {

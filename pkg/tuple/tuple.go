@@ -109,6 +109,9 @@ func (t Tuple) Magnitude() float64 {
 
 func (t Tuple) Normalize() Tuple {
 	n := t.Magnitude()
+	if n == 0 {
+		return t
+	}
 	return t.Div(n)
 }
 
