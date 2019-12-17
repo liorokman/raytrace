@@ -1,10 +1,9 @@
-package ray
+package shapes
 
 import (
 	"fmt"
 
 	"github.com/liorokman/raytrace/pkg/matrix"
-	"github.com/liorokman/raytrace/pkg/shapes"
 	"github.com/liorokman/raytrace/pkg/tuple"
 )
 
@@ -13,7 +12,7 @@ type Ray struct {
 	Direction tuple.Tuple
 }
 
-func New(origin, direction tuple.Tuple) (Ray, error) {
+func NewRay(origin, direction tuple.Tuple) (Ray, error) {
 	if !origin.IsPoint() {
 		return Ray{}, fmt.Errorf("Origin is not a point")
 	}
@@ -27,17 +26,17 @@ func (r Ray) Position(time float64) tuple.Tuple {
 	return r.Origin.Add(r.Direction.Mult(time))
 }
 
-func (r Ray) Intersect(shape shapes.Shape) []Intersection {
+func (r Ray) Intersect(shape Shape) []Intersection {
 	invShapeTransform, err := shape.GetTransform().Inverse()
 	if err != nil {
 		panic(err)
 	}
 	tr := r.Transform(invShapeTransform)
-	ints := shape.LocalIntersect(tr.Direction, tr.Origin)
+	ints := shape.LocalIntersect(tr)
 
 	retval := make([]Intersection, len(ints))
 	for i := range ints {
-		retval[i] = Intersection{ints[i], shape}
+		retval[i] = Intersection{ints[i].T, ints[i].Shape}
 	}
 	return retval
 }

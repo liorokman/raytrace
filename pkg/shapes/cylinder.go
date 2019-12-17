@@ -46,61 +46,61 @@ func (c cylinder) normalAt(point tuple.Tuple) tuple.Tuple {
 	return tuple.NewVector(point.X(), 0, point.Z())
 }
 
-func (c cylinder) localIntersect(direction tuple.Tuple, origin tuple.Tuple) []float64 {
-	A := direction.X()*direction.X() + direction.Z()*direction.Z()
+func (c cylinder) localIntersect(ray Ray, outer Shape) []Intersection {
+	A := ray.Direction.X()*ray.Direction.X() + ray.Direction.Z()*ray.Direction.Z()
 
 	if utils.FloatEqual(A, 0.0) {
-		return c.intersectCaps(direction, origin)
+		return c.intersectCaps(ray, outer)
 	}
 
-	B := 2*origin.X()*direction.X() +
-		2*origin.Z()*direction.Z()
-	C := origin.X()*origin.X() + origin.Z()*origin.Z() - 1.0
+	B := 2*ray.Origin.X()*ray.Direction.X() +
+		2*ray.Origin.Z()*ray.Direction.Z()
+	C := ray.Origin.X()*ray.Origin.X() + ray.Origin.Z()*ray.Origin.Z() - 1.0
 
 	disc := B*B - 4*A*C
 
 	if disc < 0 {
-		return []float64{}
+		return []Intersection{}
 	}
 
 	disc = math.Sqrt(disc)
 	t0 := (-B - disc) / (2 * A)
 	t1 := (-B + disc) / (2 * A)
 
-	retval := []float64{}
+	retval := []Intersection{}
 	testLimit := func(t float64) bool {
-		val := origin.Y() + t*direction.Y()
+		val := ray.Origin.Y() + t*ray.Direction.Y()
 		return c.Min < val && val < c.Max
 	}
 	if testLimit(t0) {
-		retval = append(retval, t0)
+		retval = append(retval, Intersection{T: t0, Shape: outer})
 	}
 	if testLimit(t1) {
-		retval = append(retval, t1)
+		retval = append(retval, Intersection{T: t1, Shape: outer})
 	}
-	retval = append(retval, c.intersectCaps(direction, origin)...)
+	retval = append(retval, c.intersectCaps(ray, outer)...)
 	return retval
 }
 
-func (c cylinder) intersectCaps(direction tuple.Tuple, origin tuple.Tuple) []float64 {
+func (c cylinder) intersectCaps(ray Ray, outer Shape) []Intersection {
 	checkCaps := func(t float64) bool {
-		x := origin.X() + t*direction.X()
-		z := origin.Z() + t*direction.Z()
+		x := ray.Origin.X() + t*ray.Direction.X()
+		z := ray.Origin.Z() + t*ray.Direction.Z()
 		return (x*x + z*z) <= 1
 	}
 
-	if !c.Closed || utils.FloatEqual(direction.Y(), 0.0) {
-		return []float64{}
+	if !c.Closed || utils.FloatEqual(ray.Direction.Y(), 0.0) {
+		return []Intersection{}
 	}
 
-	retval := []float64{}
-	t := (c.Min - origin.Y()) / direction.Y()
+	retval := []Intersection{}
+	t := (c.Min - ray.Origin.Y()) / ray.Direction.Y()
 	if checkCaps(t) {
-		retval = append(retval, t)
+		retval = append(retval, Intersection{T: t, Shape: outer})
 	}
-	t = (c.Max - origin.Y()) / direction.Y()
+	t = (c.Max - ray.Origin.Y()) / ray.Direction.Y()
 	if checkCaps(t) {
-		retval = append(retval, t)
+		retval = append(retval, Intersection{T: t, Shape: outer})
 	}
 	return retval
 }

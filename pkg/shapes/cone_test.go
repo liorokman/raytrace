@@ -50,11 +50,13 @@ func TestConeIntersect(t *testing.T) {
 
 	for _, curr := range tests {
 
-		xs := c.LocalIntersect(curr.direction.Normalize(), curr.origin)
+		r, err := NewRay(curr.origin, curr.direction.Normalize())
+		g.Expect(err).To(BeNil())
+		xs := c.LocalIntersect(r)
 
 		g.Expect(len(xs)).To(Equal(len(curr.t)))
 		for i := range xs {
-			g.Expect(xs[i]).To(BeNumerically("~", curr.t[i]))
+			g.Expect(xs[i].T).To(BeNumerically("~", curr.t[i]))
 		}
 
 	}
@@ -75,7 +77,9 @@ func TestConstrainedConeIntersections(t *testing.T) {
 	c := NewConstrainedCone(-0.5, 0.5, true)
 
 	for _, curr := range tests {
-		xs := c.LocalIntersect(curr.direction.Normalize(), curr.origin)
+		r, err := NewRay(curr.origin, curr.direction.Normalize())
+		g.Expect(err).To(BeNil())
+		xs := c.LocalIntersect(r)
 		g.Expect(len(xs)).To(Equal(curr.num))
 	}
 }

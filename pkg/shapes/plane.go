@@ -24,9 +24,11 @@ func (p plane) normalAt(tuple.Tuple) tuple.Tuple {
 	return tuple.NewVector(0, 1, 0)
 }
 
-func (p plane) localIntersect(direction tuple.Tuple, origin tuple.Tuple) []float64 {
-	if math.Abs(direction.Y()) < utils.EPSILON {
-		return []float64{}
+func (p plane) localIntersect(ray Ray, outer Shape) []Intersection {
+	if math.Abs(ray.Direction.Y()) < utils.EPSILON {
+		return []Intersection{}
 	}
-	return []float64{-origin.Y() / direction.Y()}
+	return []Intersection{
+		{T: -ray.Origin.Y() / ray.Direction.Y(), Shape: outer},
+	}
 }

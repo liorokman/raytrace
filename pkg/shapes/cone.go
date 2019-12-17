@@ -49,62 +49,62 @@ func (c cone) normalAt(point tuple.Tuple) tuple.Tuple {
 	return tuple.NewVector(point.X(), y, point.Z())
 }
 
-func (c cone) localIntersect(direction tuple.Tuple, origin tuple.Tuple) []float64 {
+func (c cone) localIntersect(ray Ray, outer Shape) []Intersection {
 
-	A := direction.X()*direction.X() - direction.Y()*direction.Y() + direction.Z()*direction.Z()
-	B := 2*origin.X()*direction.X() - 2*origin.Y()*direction.Y() + 2*origin.Z()*direction.Z()
-	C := origin.X()*origin.X() - origin.Y()*origin.Y() + origin.Z()*origin.Z()
+	A := ray.Direction.X()*ray.Direction.X() - ray.Direction.Y()*ray.Direction.Y() + ray.Direction.Z()*ray.Direction.Z()
+	B := 2*ray.Origin.X()*ray.Direction.X() - 2*ray.Origin.Y()*ray.Direction.Y() + 2*ray.Origin.Z()*ray.Direction.Z()
+	C := ray.Origin.X()*ray.Origin.X() - ray.Origin.Y()*ray.Origin.Y() + ray.Origin.Z()*ray.Origin.Z()
 
 	if utils.FloatEqual(A, 0.0) {
 		if !utils.FloatEqual(B, 0.0) {
-			retval := c.intersectCaps(direction, origin)
-			return append(retval, -C/(2.0*B))
+			retval := c.intersectCaps(ray, outer)
+			return append(retval, Intersection{T: -C / (2.0 * B), Shape: outer})
 		} else {
-			return c.intersectCaps(direction, origin)
+			return c.intersectCaps(ray, outer)
 		}
 	}
 	disc := B*B - 4.0*A*C
 	if disc < 0.0 {
-		return c.intersectCaps(direction, origin)
+		return c.intersectCaps(ray, outer)
 	}
 	disc = math.Sqrt(disc)
 	t0 := (-B - disc) / (2 * A)
 	t1 := (-B + disc) / (2 * A)
 
-	retval := []float64{}
+	retval := []Intersection{}
 	testLimit := func(t float64) bool {
-		val := origin.Y() + t*direction.Y()
+		val := ray.Origin.Y() + t*ray.Direction.Y()
 		return c.Min < val && val < c.Max
 	}
 	if testLimit(t0) {
-		retval = append(retval, t0)
+		retval = append(retval, Intersection{T: t0, Shape: outer})
 	}
 	if testLimit(t1) {
-		retval = append(retval, t1)
+		retval = append(retval, Intersection{T: t1, Shape: outer})
 	}
-	retval = append(retval, c.intersectCaps(direction, origin)...)
+	retval = append(retval, c.intersectCaps(ray, outer)...)
 	return retval
 }
 
-func (c cone) intersectCaps(direction tuple.Tuple, origin tuple.Tuple) []float64 {
+func (c cone) intersectCaps(ray Ray, outer Shape) []Intersection {
 	checkCaps := func(t, r float64) bool {
-		x := origin.X() + t*direction.X()
-		z := origin.Z() + t*direction.Z()
+		x := ray.Origin.X() + t*ray.Direction.X()
+		z := ray.Origin.Z() + t*ray.Direction.Z()
 		return (x*x + z*z) <= math.Abs(r)
 	}
 
-	if !c.Closed || utils.FloatEqual(direction.Y(), 0.0) {
-		return []float64{}
+	if !c.Closed || utils.FloatEqual(ray.Direction.Y(), 0.0) {
+		return []Intersection{}
 	}
 
-	retval := []float64{}
-	t := (c.Min - origin.Y()) / direction.Y()
+	retval := []Intersection{}
+	t := (c.Min - ray.Origin.Y()) / ray.Direction.Y()
 	if checkCaps(t, c.Min) {
-		retval = append(retval, t)
+		retval = append(retval, Intersection{T: t, Shape: outer})
 	}
-	t = (c.Max - origin.Y()) / direction.Y()
+	t = (c.Max - ray.Origin.Y()) / ray.Direction.Y()
 	if checkCaps(t, c.Max) {
-		retval = append(retval, t)
+		retval = append(retval, Intersection{T: t, Shape: outer})
 	}
 	return retval
 }

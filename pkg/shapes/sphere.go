@@ -27,21 +27,21 @@ func (s sphere) normalAt(point tuple.Tuple) tuple.Tuple {
 	return point.Subtract(tuple.NewPoint(0, 0, 0))
 }
 
-func (s sphere) localIntersect(direction tuple.Tuple, origin tuple.Tuple) []float64 {
+func (s sphere) localIntersect(ray Ray, outer Shape) []Intersection {
 
-	sr := origin.Subtract(tuple.NewPoint(0, 0, 0))
-	a := direction.Dot(direction)
-	b := 2.0 * direction.Dot(sr)
+	sr := ray.Origin.Subtract(tuple.NewPoint(0, 0, 0))
+	a := ray.Direction.Dot(ray.Direction)
+	b := 2.0 * ray.Direction.Dot(sr)
 	c := sr.Dot(sr) - 1.0
 
 	// Solve "a*t^2 + b*t + c" for t to get the intersections
 	disc := b*b - 4.0*a*c
 	if disc < 0 {
-		return []float64{}
+		return []Intersection{}
 	}
 	rootOfDisc := math.Sqrt(disc)
-	return []float64{
-		(-b - rootOfDisc) / (2.0 * a),
-		(-b + rootOfDisc) / (2.0 * a),
+	return []Intersection{
+		{(-b - rootOfDisc) / (2.0 * a), outer},
+		{(-b + rootOfDisc) / (2.0 * a), outer},
 	}
 }

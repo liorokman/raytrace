@@ -30,17 +30,20 @@ func (c cube) normalAt(point tuple.Tuple) tuple.Tuple {
 	return tuple.NewVector(0, 0, point.Z())
 }
 
-func (c cube) localIntersect(direction tuple.Tuple, origin tuple.Tuple) []float64 {
-	xtmin, xtmax := checkAxis(origin.X(), direction.X())
-	ytmin, ytmax := checkAxis(origin.Y(), direction.Y())
-	ztmin, ztmax := checkAxis(origin.Z(), direction.Z())
+func (c cube) localIntersect(ray Ray, outer Shape) []Intersection {
+	xtmin, xtmax := checkAxis(ray.Origin.X(), ray.Direction.X())
+	ytmin, ytmax := checkAxis(ray.Origin.Y(), ray.Direction.Y())
+	ztmin, ztmax := checkAxis(ray.Origin.Z(), ray.Direction.Z())
 
 	min := math.Max(math.Max(xtmin, ytmin), ztmin)
 	max := math.Min(math.Min(xtmax, ytmax), ztmax)
 	if min > max {
-		return []float64{}
+		return []Intersection{}
 	}
-	return []float64{min, max}
+	return []Intersection{
+		{min, outer},
+		{max, outer},
+	}
 }
 
 func checkAxis(origin float64, direction float64) (float64, float64) {

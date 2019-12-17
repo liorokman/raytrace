@@ -1,4 +1,4 @@
-package ray
+package shapes
 
 import (
 	"testing"
@@ -6,7 +6,6 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/liorokman/raytrace/pkg/matrix"
-	"github.com/liorokman/raytrace/pkg/shapes"
 	"github.com/liorokman/raytrace/pkg/tuple"
 	"github.com/liorokman/raytrace/pkg/utils"
 )
@@ -14,11 +13,11 @@ import (
 func TestNewRay(t *testing.T) {
 	g := NewGomegaWithT(t)
 
-	_, e := New(tuple.NewVector(1, 2, 3), tuple.NewVector(1, 2, 3))
+	_, e := NewRay(tuple.NewVector(1, 2, 3), tuple.NewVector(1, 2, 3))
 	g.Expect(e).ToNot(BeNil())
-	_, e = New(tuple.NewPoint(1, 2, 3), tuple.NewPoint(1, 2, 3))
+	_, e = NewRay(tuple.NewPoint(1, 2, 3), tuple.NewPoint(1, 2, 3))
 	g.Expect(e).ToNot(BeNil())
-	r, e := New(tuple.NewPoint(1, 2, 3), tuple.NewVector(1, 2, 3))
+	r, e := NewRay(tuple.NewPoint(1, 2, 3), tuple.NewVector(1, 2, 3))
 	g.Expect(e).To(BeNil())
 	g.Expect(r.Origin.Equals(tuple.NewPoint(1, 2, 3))).To(BeTrue())
 	g.Expect(r.Direction.Equals(tuple.NewVector(1, 2, 3))).To(BeTrue())
@@ -27,7 +26,7 @@ func TestNewRay(t *testing.T) {
 func TestRayPosition(t *testing.T) {
 	g := NewGomegaWithT(t)
 
-	r, e := New(tuple.NewPoint(2, 3, 4), tuple.NewVector(1, 0, 0))
+	r, e := NewRay(tuple.NewPoint(2, 3, 4), tuple.NewVector(1, 0, 0))
 	g.Expect(e).To(BeNil())
 	p := r.Position(0)
 	g.Expect(p.Equals(tuple.NewPoint(2, 3, 4))).To(BeTrue())
@@ -42,17 +41,17 @@ func TestRayPosition(t *testing.T) {
 func TestRaySphereIntersect(t *testing.T) {
 	g := NewGomegaWithT(t)
 
-	r, e := New(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 0, 1))
+	r, e := NewRay(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 0, 1))
 	g.Expect(e).To(BeNil())
 
-	s := shapes.NewSphere()
+	s := NewSphere()
 
 	xs := r.Intersect(s)
 	g.Expect(len(xs)).To(Equal(2))
 	g.Expect(utils.FloatEqual(xs[0].T, 4.0)).To(BeTrue())
 	g.Expect(utils.FloatEqual(xs[1].T, 6.0)).To(BeTrue())
 
-	r, e = New(tuple.NewPoint(0, 1, -5), tuple.NewVector(0, 0, 1))
+	r, e = NewRay(tuple.NewPoint(0, 1, -5), tuple.NewVector(0, 0, 1))
 	g.Expect(e).To(BeNil())
 
 	xs = r.Intersect(s)
@@ -60,13 +59,13 @@ func TestRaySphereIntersect(t *testing.T) {
 	g.Expect(utils.FloatEqual(xs[0].T, 5.0)).To(BeTrue())
 	g.Expect(utils.FloatEqual(xs[1].T, 5.0)).To(BeTrue())
 
-	r, e = New(tuple.NewPoint(0, 2, -5), tuple.NewVector(0, 0, 1))
+	r, e = NewRay(tuple.NewPoint(0, 2, -5), tuple.NewVector(0, 0, 1))
 	g.Expect(e).To(BeNil())
 
 	xs = r.Intersect(s)
 	g.Expect(len(xs)).To(Equal(0))
 
-	r, e = New(tuple.NewPoint(0, 0, 0), tuple.NewVector(0, 0, 1))
+	r, e = NewRay(tuple.NewPoint(0, 0, 0), tuple.NewVector(0, 0, 1))
 	g.Expect(e).To(BeNil())
 
 	xs = r.Intersect(s)
@@ -74,7 +73,7 @@ func TestRaySphereIntersect(t *testing.T) {
 	g.Expect(utils.FloatEqual(xs[0].T, -1.0)).To(BeTrue())
 	g.Expect(utils.FloatEqual(xs[1].T, 1.0)).To(BeTrue())
 
-	r, e = New(tuple.NewPoint(0, 0, 5), tuple.NewVector(0, 0, 1))
+	r, e = NewRay(tuple.NewPoint(0, 0, 5), tuple.NewVector(0, 0, 1))
 	g.Expect(e).To(BeNil())
 
 	xs = r.Intersect(s)
@@ -86,7 +85,7 @@ func TestRaySphereIntersect(t *testing.T) {
 func TestTransformRay(t *testing.T) {
 	g := NewGomegaWithT(t)
 
-	r, e := New(tuple.NewPoint(1, 2, 3), tuple.NewVector(0, 1, 0))
+	r, e := NewRay(tuple.NewPoint(1, 2, 3), tuple.NewVector(0, 1, 0))
 	g.Expect(e).To(BeNil())
 	tr := r.Transform(matrix.NewTranslation(3, 4, 5))
 	g.Expect(tr.Origin.Equals(tuple.NewPoint(4, 6, 8))).To(BeTrue())

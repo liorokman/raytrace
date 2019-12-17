@@ -7,7 +7,7 @@ import (
 
 	"github.com/liorokman/raytrace/pkg/canvas"
 	"github.com/liorokman/raytrace/pkg/matrix"
-	"github.com/liorokman/raytrace/pkg/ray"
+	"github.com/liorokman/raytrace/pkg/shapes"
 	"github.com/liorokman/raytrace/pkg/tuple"
 	"github.com/liorokman/raytrace/pkg/world"
 )
@@ -71,7 +71,7 @@ func (c Camera) WithTransform(t matrix.Matrix) Camera {
 	}
 }
 
-func (c Camera) RayForPixel(px, py uint32) ray.Ray {
+func (c Camera) RayForPixel(px, py uint32) shapes.Ray {
 
 	xOffset := (float64(px) + 0.5) * c.pixelSize
 	yOffset := (float64(py) + 0.5) * c.pixelSize
@@ -86,7 +86,7 @@ func (c Camera) RayForPixel(px, py uint32) ray.Ray {
 	pixel := transformInverse.MultiplyTuple(tuple.NewPoint(worldX, worldY, -1))
 	origin := transformInverse.MultiplyTuple(tuple.NewPoint(0, 0, 0))
 	direction := pixel.Subtract(origin).Normalize()
-	ray, err := ray.New(origin, direction)
+	ray, err := shapes.NewRay(origin, direction)
 	if err != nil {
 		panic(err)
 	}

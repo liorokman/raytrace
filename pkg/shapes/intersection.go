@@ -1,16 +1,15 @@
-package ray
+package shapes
 
 import (
 	"math"
 
-	"github.com/liorokman/raytrace/pkg/shapes"
 	"github.com/liorokman/raytrace/pkg/tuple"
 	"github.com/liorokman/raytrace/pkg/utils"
 )
 
 type Intersection struct {
 	T     float64
-	Shape shapes.Shape
+	Shape Shape
 }
 
 type Computation struct {
@@ -70,7 +69,7 @@ func (i Intersection) PrepareComputation(r Ray, xs ...Intersection) Computation 
 	retval.UnderPoint = retval.Point.Subtract(retval.NormalV.Mult(utils.EPSILON))
 	retval.ReflectV = r.Direction.Reflect(retval.NormalV)
 
-	containers := shapes.ShapeList{}
+	containers := ShapeList{}
 	for currXS := range xs {
 		if xs[currXS].Equals(i) {
 			if len(containers) == 0 {

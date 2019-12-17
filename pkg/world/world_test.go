@@ -9,7 +9,6 @@ import (
 	"github.com/liorokman/raytrace/pkg/fixtures"
 	"github.com/liorokman/raytrace/pkg/material"
 	"github.com/liorokman/raytrace/pkg/matrix"
-	"github.com/liorokman/raytrace/pkg/ray"
 	"github.com/liorokman/raytrace/pkg/shapes"
 	"github.com/liorokman/raytrace/pkg/tuple"
 )
@@ -38,13 +37,13 @@ func TestDefaultWorld(t *testing.T) {
 func TestReflection(t *testing.T) {
 	g := NewGomegaWithT(t)
 	w := defaultWorld()
-	r, e := ray.New(tuple.NewPoint(0, 0, 0), tuple.NewVector(0, 0, 1))
+	r, e := shapes.NewRay(tuple.NewPoint(0, 0, 0), tuple.NewVector(0, 0, 1))
 	g.Expect(e).To(BeNil())
 
 	mb := material.NewBuilder(w.Shape(1).GetMaterial())
 	mb.WithAmbient(1)
 	w.SetShape(1, w.Shape(1).WithMaterial(mb.Build()))
-	i := ray.Intersection{
+	i := shapes.Intersection{
 		T:     1,
 		Shape: w.Shape(1),
 	}
@@ -55,9 +54,9 @@ func TestReflection(t *testing.T) {
 	mb.Reset().WithReflective(0.5)
 	s := shapes.NewPlane().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(0, -1, 0))
 	w.AddShapes(s)
-	r, e = ray.New(tuple.NewPoint(0, 0, -3), tuple.NewVector(0, -math.Sqrt(2)/2.0, math.Sqrt(2.0)/2.0))
+	r, e = shapes.NewRay(tuple.NewPoint(0, 0, -3), tuple.NewVector(0, -math.Sqrt(2)/2.0, math.Sqrt(2.0)/2.0))
 	g.Expect(e).To(BeNil())
-	i = ray.Intersection{
+	i = shapes.Intersection{
 		T:     math.Sqrt(2),
 		Shape: s,
 	}
@@ -75,9 +74,9 @@ func TestNoInfiniteRecursionInReflection(t *testing.T) {
 
 	mb := material.NewDefaultBuilder().WithReflective(0.5)
 	w.AddShapes(shapes.NewPlane().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(0, -1, 0)))
-	r, e := ray.New(tuple.NewPoint(0, 0, -3), tuple.NewVector(0, -math.Sqrt(2)/2.0, math.Sqrt(2)/2.0))
+	r, e := shapes.NewRay(tuple.NewPoint(0, 0, -3), tuple.NewVector(0, -math.Sqrt(2)/2.0, math.Sqrt(2)/2.0))
 	g.Expect(e).To(BeNil())
-	i := ray.Intersection{
+	i := shapes.Intersection{
 		T:     math.Sqrt(2.0),
 		Shape: w.Shape(2),
 	}
@@ -89,7 +88,7 @@ func TestNoInfiniteRecursionInReflection(t *testing.T) {
 	mb.Reset().WithReflective(1)
 	w.AddShapes(shapes.NewPlane().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(0, -1, 0)))
 	w.AddShapes(shapes.NewPlane().WithMaterial(mb.Build()).WithTransform(matrix.NewTranslation(0, 1, 0)))
-	r, e = ray.New(tuple.NewPoint(0, 0, 0), tuple.NewVector(0, 1, 0))
+	r, e = shapes.NewRay(tuple.NewPoint(0, 0, 0), tuple.NewVector(0, 1, 0))
 	g.Expect(e).To(BeNil())
 	g.Expect(w.ColorAt(r, 4)).To(Equal(tuple.NewColor(9.5, 9.5, 9.5)))
 }
@@ -98,7 +97,7 @@ func TestIntersectWorld(t *testing.T) {
 	g := NewGomegaWithT(t)
 	w := defaultWorld()
 
-	r, e := ray.New(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 0, 1))
+	r, e := shapes.NewRay(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 0, 1))
 	g.Expect(e).To(BeNil())
 	xs := w.IntersectRay(r)
 	g.Expect(len(xs)).To(Equal(4))
@@ -112,18 +111,18 @@ func TestShadeWorld(t *testing.T) {
 	g := NewGomegaWithT(t)
 	w := defaultWorld()
 
-	r, e := ray.New(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 0, 1))
+	r, e := shapes.NewRay(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 0, 1))
 	g.Expect(e).To(BeNil())
 
-	i := ray.Intersection{T: 4, Shape: w.Shape(0)}
+	i := shapes.Intersection{T: 4, Shape: w.Shape(0)}
 	comps := i.PrepareComputation(r)
 	c := w.ShadeHit(comps, 5)
 	g.Expect(c.Equals(tuple.NewColor(0.38066, 0.47583, 0.2855))).To(BeTrue())
 
 	w.Lights[0] = fixtures.NewPointLight(tuple.NewPoint(0, 0.25, 0), tuple.NewColor(1, 1, 1))
-	r, e = ray.New(tuple.NewPoint(0, 0, 0), tuple.NewVector(0, 0, 1))
+	r, e = shapes.NewRay(tuple.NewPoint(0, 0, 0), tuple.NewVector(0, 0, 1))
 	g.Expect(e).To(BeNil())
-	i = ray.Intersection{T: 0.5, Shape: w.Shape(1)}
+	i = shapes.Intersection{T: 0.5, Shape: w.Shape(1)}
 	comps = i.PrepareComputation(r)
 	c = w.ShadeHit(comps, 5)
 	g.Expect(c.Equals(tuple.NewColor(0.90498, 0.90498, 0.90498))).To(BeTrue())
@@ -134,13 +133,13 @@ func TestColorAt(t *testing.T) {
 	w := defaultWorld()
 
 	// Miss
-	r, e := ray.New(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 1, 0))
+	r, e := shapes.NewRay(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 1, 0))
 	g.Expect(e).To(BeNil())
 	c := w.ColorAt(r, 5)
 	g.Expect(c).To(Equal(tuple.NewColor(0, 0, 0)))
 
 	// Hit
-	r, e = ray.New(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 0, 1))
+	r, e = shapes.NewRay(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 0, 1))
 	g.Expect(e).To(BeNil())
 	c = w.ColorAt(r, 5)
 	g.Expect(c.Equals(tuple.NewColor(0.38066, 0.47583, 0.2855))).To(BeTrue())
@@ -152,7 +151,7 @@ func TestColorAt(t *testing.T) {
 		b.WithAmbient(1)
 		w.SetShape(j, s.WithMaterial(b.Build()))
 	}
-	r, e = ray.New(tuple.NewPoint(0, 0, 0.75), tuple.NewVector(0, 0, -1))
+	r, e = shapes.NewRay(tuple.NewPoint(0, 0, 0.75), tuple.NewVector(0, 0, -1))
 	g.Expect(e).To(BeNil())
 	c = w.ColorAt(r, 5)
 	g.Expect(c.Equals(w.Shape(1).GetMaterial().Pattern.ColorAt(tuple.NewPoint(0, 0, 0.75)))).To(BeTrue())
@@ -178,9 +177,9 @@ func TestShadeHit(t *testing.T) {
 	w.AddShapes(shapes.NewSphere(),
 		shapes.NewSphere().WithTransform(matrix.NewTranslation(0, 0, 10)))
 
-	r, err := ray.New(tuple.NewPoint(0, 0, 5), tuple.NewVector(0, 0, 1))
+	r, err := shapes.NewRay(tuple.NewPoint(0, 0, 5), tuple.NewVector(0, 0, 1))
 	g.Expect(err).To(BeNil())
-	i := ray.Intersection{T: 4, Shape: w.objects[1]}
+	i := shapes.Intersection{T: 4, Shape: w.objects[1]}
 
 	comps := i.PrepareComputation(r)
 	c := w.ShadeHit(comps, 5)
@@ -193,10 +192,10 @@ func TestRefractions(t *testing.T) {
 	g := NewGomegaWithT(t)
 	w := defaultWorld()
 
-	r, err := ray.New(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 0, 1))
+	r, err := shapes.NewRay(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 0, 1))
 	g.Expect(err).To(BeNil())
 
-	xs := []ray.Intersection{
+	xs := []shapes.Intersection{
 		{T: 4, Shape: w.Shape(0)},
 		{T: 6, Shape: w.Shape(0)},
 	}
@@ -205,7 +204,7 @@ func TestRefractions(t *testing.T) {
 	g.Expect(c).To(Equal(tuple.Black))
 
 	w.SetShape(0, shapes.NewGlassSphere())
-	xs = []ray.Intersection{
+	xs = []shapes.Intersection{
 		{T: 4, Shape: w.Shape(0)},
 		{T: 6, Shape: w.Shape(0)},
 	}
@@ -214,9 +213,9 @@ func TestRefractions(t *testing.T) {
 	g.Expect(c).To(Equal(tuple.Black))
 
 	// Test total internal reflection
-	r, err = ray.New(tuple.NewPoint(0, 0, math.Sqrt(2.0)/2.0), tuple.NewVector(0, 1, 0))
+	r, err = shapes.NewRay(tuple.NewPoint(0, 0, math.Sqrt(2.0)/2.0), tuple.NewVector(0, 1, 0))
 	g.Expect(err).To(BeNil())
-	xs = []ray.Intersection{
+	xs = []shapes.Intersection{
 		{T: -math.Sqrt(2.0) / 2.0, Shape: w.Shape(0)},
 		{T: math.Sqrt(2.0) / 2.0, Shape: w.Shape(0)},
 	}
@@ -228,9 +227,9 @@ func TestRefractions(t *testing.T) {
 	mb := material.NewDefaultBuilder()
 	w.SetShape(0, shapes.NewSphere().WithMaterial(mb.WithAmbient(1.0).WithPattern(material.NewTestPattern().WithTransform(matrix.NewIdentity())).Build()))
 	w.SetShape(1, shapes.NewGlassSphere())
-	r, err = ray.New(tuple.NewPoint(0, 0, 0.1), tuple.NewVector(0, 1, 0))
+	r, err = shapes.NewRay(tuple.NewPoint(0, 0, 0.1), tuple.NewVector(0, 1, 0))
 	g.Expect(err).To(BeNil())
-	xs = []ray.Intersection{
+	xs = []shapes.Intersection{
 		{T: -0.9899, Shape: w.Shape(0)},
 		{T: -0.4899, Shape: w.Shape(1)},
 		{T: 0.4899, Shape: w.Shape(1)},
@@ -249,10 +248,10 @@ func TestRefractedShader(t *testing.T) {
 	ball := shapes.NewSphere().WithTransform(matrix.NewTranslation(0, -3.5, -0.5)).WithMaterial(mb.Reset().WithColor(tuple.Red).WithAmbient(0.5).Build())
 	w.AddShapes(floor, ball)
 
-	r, err := ray.New(tuple.NewPoint(0, 0, -3), tuple.NewVector(0, -math.Sqrt(2.0)/2.0, math.Sqrt(2.0)/2.0))
+	r, err := shapes.NewRay(tuple.NewPoint(0, 0, -3), tuple.NewVector(0, -math.Sqrt(2.0)/2.0, math.Sqrt(2.0)/2.0))
 	g.Expect(err).To(BeNil())
 
-	xs := []ray.Intersection{
+	xs := []shapes.Intersection{
 		{T: math.Sqrt(2.0), Shape: floor},
 	}
 	comps := xs[0].PrepareComputation(r, xs...)
@@ -268,10 +267,10 @@ func TestSchlickEnabledShader(t *testing.T) {
 	ball := shapes.NewSphere().WithTransform(matrix.NewTranslation(0, -3.5, -0.5)).WithMaterial(mb.Reset().WithColor(tuple.Red).WithAmbient(0.5).Build())
 	w.AddShapes(floor, ball)
 
-	r, err := ray.New(tuple.NewPoint(0, 0, -3), tuple.NewVector(0, -math.Sqrt(2.0)/2.0, math.Sqrt(2.0)/2.0))
+	r, err := shapes.NewRay(tuple.NewPoint(0, 0, -3), tuple.NewVector(0, -math.Sqrt(2.0)/2.0, math.Sqrt(2.0)/2.0))
 	g.Expect(err).To(BeNil())
 
-	xs := []ray.Intersection{
+	xs := []shapes.Intersection{
 		{T: math.Sqrt(2.0), Shape: floor},
 	}
 	comps := xs[0].PrepareComputation(r, xs...)

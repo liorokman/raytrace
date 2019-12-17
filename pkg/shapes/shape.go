@@ -17,7 +17,11 @@ type Shape interface {
 	WithTransform(matrix.Matrix) Shape
 	WithMaterial(material.Material) Shape
 	NormalAt(tuple.Tuple) tuple.Tuple
-	LocalIntersect(direction tuple.Tuple, origin tuple.Tuple) []float64
+	LocalIntersect(ray Ray) []Intersection
+
+	SetParent(p Shape) Shape
+	Parent() Shape
+	InnerShape() ShapeDetails
 }
 
 type ShapeList []Shape
@@ -31,10 +35,10 @@ func (s ShapeList) Find(needle Shape) int {
 	return -1
 }
 
-type shapeDetails interface {
+type ShapeDetails interface {
 	shapeIdPrefix() string
 	normalAt(tuple.Tuple) tuple.Tuple
-	localIntersect(direction tuple.Tuple, origin tuple.Tuple) []float64
+	localIntersect(ray Ray, outer Shape) []Intersection
 }
 
 var shapeCounter int32 = 0
@@ -47,7 +51,21 @@ type shapeCore struct {
 	id        int32
 	transform matrix.Matrix
 	material  material.Material
-	shape     shapeDetails
+	shape     ShapeDetails
+	parent    Shape
+}
+
+func (s shapeCore) InnerShape() ShapeDetails {
+	return s.shape
+}
+
+func (s shapeCore) SetParent(p Shape) Shape {
+	s.parent = p
+	return s
+}
+
+func (s shapeCore) Parent() Shape {
+	return s.parent
 }
 
 func (s shapeCore) GetTransform() matrix.Matrix {
@@ -58,7 +76,7 @@ func (s shapeCore) GetMaterial() material.Material {
 	return s.material
 }
 
-func newShape(m material.Material, t matrix.Matrix, s shapeDetails) shapeCore {
+func newShape(m material.Material, t matrix.Matrix, s ShapeDetails) shapeCore {
 	return shapeCore{
 		id:        atomic.AddInt32(&shapeCounter, 1),
 		material:  m,
@@ -84,8 +102,8 @@ func (s shapeCore) NormalAt(point tuple.Tuple) tuple.Tuple {
 	return worldNormal.Normalize()
 }
 
-func (s shapeCore) LocalIntersect(direction tuple.Tuple, origin tuple.Tuple) []float64 {
-	return s.shape.localIntersect(direction, origin)
+func (s shapeCore) LocalIntersect(ray Ray) []Intersection {
+	return s.shape.localIntersect(ray, s)
 }
 
 func (s shapeCore) ID() string {
