@@ -67,18 +67,21 @@ func (c *canvas) SetPixel(x, y uint32, v tuple.Color) error {
 func (c *canvas) WritePPM(wr io.Writer) error {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	ppmTemplate := `P3
+	ppmTemplate := `P2
 {{ .Width }} {{ .Height }}
 255{{- $pos := 0 }}{{$w := .Width}}
 {{ range $index, $element := .Data }}{{- $scaled := $element.Mult 255  }}
-{{- ceil $scaled.Red | clamp }} {{ ceil $scaled.Green | clamp }} {{ ceil $scaled.Blue | clamp -}}
-{{- $pos = newpos $pos $scaled -}}{{ if or (ge $pos 56) (isnewline $index $w) }}{{ $pos = 0 }}
+{{- avg $scaled | ceil | clamp -}}
+{{- $pos = newpos $pos $scaled -}}{{ if or (ge $pos 65) (isnewline $index $w) }}{{ $pos = 0 }}
 {{ else }} {{ end }}{{end}}
 
 	`
 	funcMap := template.FuncMap{
 		"isnewline": func(loc int, width uint32) bool {
 			return (loc+1)%int(width) == 0
+		},
+		"avg": func(elem tuple.Color) float64 {
+			return (elem.Red() + elem.Green() + elem.Blue()) / 3.0
 		},
 		"ceil": func(v float64) int { return int(math.Ceil(v)) },
 		"clamp": func(v int) int {
@@ -99,10 +102,8 @@ func (c *canvas) WritePPM(wr io.Writer) error {
 					return 3
 				}
 			}
-			x := 2 // two spaces between the three numbers
-			x = x + tmp1(element.Red())
-			x = x + tmp1(element.Green())
-			x = x + tmp1(element.Blue())
+			x := 1 // two spaces between the three numbers
+			x = x + tmp1((element.Red()+element.Green()+element.Blue())/3.0)
 			return x + pos
 		},
 	}
