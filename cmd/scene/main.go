@@ -64,5 +64,9 @@ func main() {
 		os.Exit(1)
 	}
 	defer file.Close()
-	image.WritePPM(file)
+	err = image.WritePPM(file)
+	if err != nil {
+		fmt.Printf("Failed to generate the output file: %s\n", err)
+		os.Exit(1)
+	}
 }
