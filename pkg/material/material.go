@@ -5,8 +5,8 @@ import (
 	"math"
 
 	"github.com/liorokman/raytrace/pkg/fixtures"
-	"github.com/liorokman/raytrace/pkg/matrix"
 	"github.com/liorokman/raytrace/pkg/tuple"
+	"github.com/liorokman/raytrace/pkg/types"
 )
 
 type Material struct {
@@ -151,8 +151,8 @@ func (m Material) RefractiveIndex() float64 {
 	return m.refractiveIndex
 }
 
-func (m Material) Lighting(objTransform matrix.Matrix, l fixtures.PointLight, point tuple.Tuple, eyev, normal tuple.Tuple, inShadow bool) tuple.Color {
-	effectiveColor := m.Pattern.PatternAtObject(objTransform, point).MultColor(l.Intensity())
+func (m Material) Lighting(shape types.ShapeTransformer, l fixtures.PointLight, point tuple.Tuple, eyev, normal tuple.Tuple, inShadow bool) tuple.Color {
+	effectiveColor := m.Pattern.PatternAtObject(shape, point).MultColor(l.Intensity())
 	lightV := l.Position().Subtract(point).Normalize()
 
 	ambient := effectiveColor.Mult(m.ambient)

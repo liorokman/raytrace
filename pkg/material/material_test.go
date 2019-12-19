@@ -12,11 +12,23 @@ import (
 	"github.com/liorokman/raytrace/pkg/tuple"
 )
 
+type testShape struct {
+	t matrix.Matrix
+}
+
+func (t testShape) GetTransform() matrix.Matrix {
+	return t.t
+}
+
+func (t testShape) WorldToObject(point tuple.Tuple) (tuple.Tuple, error) {
+	return tuple.Tuple{}, nil
+}
+
 func TestLighting(t *testing.T) {
 	g := NewGomegaWithT(t)
 	m := Default()
 	pos := tuple.NewPoint(0, 0, 0)
-	identity := matrix.NewIdentity()
+	identity := testShape{matrix.NewIdentity()}
 
 	eyev := tuple.NewVector(0, 0, -1)
 	normalv := tuple.NewVector(0, 0, -1)

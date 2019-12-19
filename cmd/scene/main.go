@@ -34,7 +34,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Printf("World is %#v\n", w)
+	fmt.Printf("World is %s\n", w)
 	fmt.Printf("Cam input is %#v\n", camInput)
 
 	cam := camera.NewCamera(camInput.Hsize, camInput.Vsize, camInput.FieldOfView).

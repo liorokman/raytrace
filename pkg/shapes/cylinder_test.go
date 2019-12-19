@@ -24,7 +24,8 @@ func TestCylinderNormal(t *testing.T) {
 
 	for _, curr := range tests {
 
-		n := c.NormalAt(curr.point)
+		n, err := c.NormalAt(curr.point)
+		g.Expect(err).To(BeNil())
 		g.Expect(n).To(Equal(curr.normal))
 	}
 }
@@ -46,7 +47,8 @@ func TestClosedCylinderNormal(t *testing.T) {
 	c := NewConstrainedCylinder(1, 2, true)
 
 	for _, curr := range tests {
-		n := c.NormalAt(curr.point)
+		n, err := c.NormalAt(curr.point)
+		g.Expect(err).To(BeNil())
 		g.Expect(n).To(Equal(curr.normal))
 	}
 }

@@ -27,6 +27,7 @@ const (
 	CUBE     = "cube"
 	CYLINDER = "cylinder"
 	CONE     = "cone"
+	GROUP    = "group"
 
 	// patterns
 	SOLID    = "solid"
@@ -73,8 +74,11 @@ func (f fixture) toFixture() (fixtures.PointLight, error) {
 
 func extractFloatParam(bag map[string]interface{}, name string) (float64, bool, error) {
 	if val, ok := bag[name]; ok {
-		if fval, ok := val.(float64); ok {
+		switch fval := val.(type) {
+		case float64:
 			return fval, true, nil
+		case int:
+			return float64(fval), true, nil
 		}
 		return 0, false, fmt.Errorf("%s found but is not a float64 value", name)
 	} else {
@@ -90,6 +94,25 @@ func newShape(sType string, params map[string]interface{}) (shapes.Shape, error)
 		return shapes.NewPlane(), nil
 	case CUBE:
 		return shapes.NewCube(), nil
+	case GROUP:
+		g := shapes.NewGroup()
+		if val, ok := params["content"]; ok {
+			asYaml, _ := yaml.Marshal(val)
+			var content []object = []object{}
+			if err := yaml.Unmarshal(asYaml, &content); err != nil {
+				return nil, err
+			}
+			for _, o := range content {
+				s, err := translater(o)
+				if err != nil {
+					return nil, err
+				}
+				if _, err = shapes.Connect(g, s); err != nil {
+					return nil, err
+				}
+			}
+		}
+		return g, nil
 	case CYLINDER:
 		fallthrough
 	case CONE:
@@ -275,7 +298,7 @@ func (p pattern) toPattern() (material.Pattern, error) {
 type object struct {
 	Type      string      `yaml:"type"`
 	Transform []transform `yaml:",flow"`
-	Material  materialInput
+	Material  *materialInput
 	Params    map[string]interface{} `yaml:"params,omitempty"`
 }
 
@@ -326,6 +349,30 @@ func (t transform) toMatrix() (matrix.Matrix, error) {
 	}
 }
 
+func translater(o object) (shapes.Shape, error) {
+	s, err := newShape(o.Type, o.Params)
+	if err != nil {
+		return nil, err
+	}
+	finalTransform := matrix.NewIdentity()
+	for _, t := range o.Transform {
+		if mat, err := t.toMatrix(); err != nil {
+			return nil, err
+		} else {
+			finalTransform = finalTransform.Multiply(mat)
+		}
+	}
+	s = s.WithTransform(finalTransform)
+	if o.Material != nil {
+		mat, err := o.Material.toMaterial()
+		if err != nil {
+			return nil, err
+		}
+		s = s.WithMaterial(mat)
+	}
+	return s, nil
+}
+
 func NewWorld(file string) (*World, Cam, error) {
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
@@ -341,25 +388,10 @@ func NewWorld(file string) (*World, Cam, error) {
 		Lights:  []fixtures.PointLight{},
 	}
 	for _, o := range w.Objects {
-		s, err := newShape(o.Type, o.Params)
+		s, err := translater(o)
 		if err != nil {
 			return nil, Cam{}, err
 		}
-		finalTransform := matrix.NewIdentity()
-		for _, t := range o.Transform {
-			if mat, err := t.toMatrix(); err != nil {
-				return nil, Cam{}, err
-			} else {
-				finalTransform = finalTransform.Multiply(mat)
-			}
-		}
-		s = s.WithTransform(finalTransform)
-		mat, err := o.Material.toMaterial()
-		if err != nil {
-			return nil, Cam{}, err
-		}
-		s = s.WithMaterial(mat)
-
 		retval.AddShapes(s)
 	}
 	for _, f := range w.Fixtures {

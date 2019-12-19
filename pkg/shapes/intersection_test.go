@@ -48,7 +48,8 @@ func TestPrecomputation(t *testing.T) {
 		T:     4,
 		Shape: NewSphere(),
 	}
-	c := i.PrepareComputation(r, i)
+	c, e := i.PrepareComputation(r, i)
+	g.Expect(e).To(BeNil())
 
 	g.Expect(c.T).To(Equal(i.T))
 	g.Expect(c.Shape).To(Equal(i.Shape))
@@ -63,7 +64,8 @@ func TestPrecomputation(t *testing.T) {
 		T:     1,
 		Shape: NewSphere(),
 	}
-	c = i.PrepareComputation(r, i)
+	c, e = i.PrepareComputation(r, i)
+	g.Expect(e).To(BeNil())
 	g.Expect(c.Point).To(Equal(tuple.NewPoint(0, 0, 1)))
 	g.Expect(c.EyeV).To(Equal(tuple.NewVector(0, 0, -1)))
 	g.Expect(c.NormalV).To(Equal(tuple.NewVector(0, 0, -1)))
@@ -80,7 +82,8 @@ func TestPrepareReflectVector(t *testing.T) {
 		T:     math.Sqrt(2),
 		Shape: NewPlane(),
 	}
-	comps := i.PrepareComputation(r, i)
+	comps, err := i.PrepareComputation(r, i)
+	g.Expect(err).To(BeNil())
 	g.Expect(comps.ReflectV.Equals(tuple.NewVector(0, math.Sqrt(2)/2, math.Sqrt(2)/2))).To(BeTrue())
 }
 
@@ -92,7 +95,8 @@ func TestOverUnderZ(t *testing.T) {
 	s := NewSphere().WithTransform(matrix.NewTranslation(0, 0, 1))
 	i := Intersection{5, s}
 
-	comps := i.PrepareComputation(r, i)
+	comps, e := i.PrepareComputation(r, i)
+	g.Expect(e).To(BeNil())
 	g.Expect(comps.OverPoint.Z()).To(BeNumerically("<", -utils.EPSILON/2))
 	g.Expect(comps.Point.Z()).To(BeNumerically(">", comps.OverPoint.Z()))
 
@@ -112,7 +116,8 @@ func TestFindingN1N2(t *testing.T) {
 	xs := []Intersection{{2, A}, {2.75, B}, {3.25, C}, {4.75, B}, {5.25, C}, {6, A}}
 	expected := []struct{ n1, n2 float64 }{{1.0, 1.5}, {1.5, 2.0}, {2.0, 2.5}, {2.5, 2.5}, {2.5, 1.5}, {1.5, 1.0}}
 	for i := range xs {
-		comps := xs[i].PrepareComputation(r, xs...)
+		comps, err := xs[i].PrepareComputation(r, xs...)
+		g.Expect(err).To(BeNil())
 		g.Expect(comps.N1).To(BeNumerically("==", expected[i].n1))
 		g.Expect(comps.N2).To(BeNumerically("==", expected[i].n2))
 	}
@@ -129,7 +134,8 @@ func TestSchlick(t *testing.T) {
 		{-math.Sqrt(2) / 2, sphere},
 		{math.Sqrt(2) / 2, sphere},
 	}
-	comps := xs[1].PrepareComputation(r, xs...)
+	comps, err := xs[1].PrepareComputation(r, xs...)
+	g.Expect(err).To(BeNil())
 	reflectence := comps.Schlick()
 	g.Expect(reflectence).To(Equal(1.0))
 
@@ -137,7 +143,8 @@ func TestSchlick(t *testing.T) {
 	r, err = NewRay(tuple.NewPoint(0, 0, 0), tuple.NewVector(0, 1, 0))
 	g.Expect(err).To(BeNil())
 	xs = []Intersection{{-1, sphere}, {1, sphere}}
-	comps = xs[1].PrepareComputation(r, xs...)
+	comps, err = xs[1].PrepareComputation(r, xs...)
+	g.Expect(err).To(BeNil())
 	reflectence = comps.Schlick()
 	g.Expect(reflectence).To(BeNumerically("~", 0.04))
 
@@ -145,7 +152,8 @@ func TestSchlick(t *testing.T) {
 	r, err = NewRay(tuple.NewPoint(0, 0.99, -2), tuple.NewVector(0, 0, 1))
 	g.Expect(err).To(BeNil())
 	xs = []Intersection{{1.8589, sphere}}
-	comps = xs[0].PrepareComputation(r, xs...)
+	comps, err = xs[0].PrepareComputation(r, xs...)
+	g.Expect(err).To(BeNil())
 	reflectence = comps.Schlick()
 	g.Expect(reflectence).To(BeNumerically("~", 0.4887308101))
 

@@ -5,6 +5,7 @@ import (
 
 	"github.com/liorokman/raytrace/pkg/matrix"
 	"github.com/liorokman/raytrace/pkg/tuple"
+	"github.com/liorokman/raytrace/pkg/types"
 	"github.com/liorokman/raytrace/pkg/utils"
 )
 
@@ -27,13 +28,12 @@ func (p Pattern) WithTransform(t matrix.Matrix) Pattern {
 	}
 }
 
-func (p Pattern) PatternAtObject(objTransform matrix.Matrix, point tuple.Tuple) tuple.Color {
+func (p Pattern) PatternAtObject(shape types.ShapeTransformer, point tuple.Tuple) tuple.Color {
 
-	objTransInv, err := objTransform.Inverse()
+	objPoint, err := shape.WorldToObject(point)
 	if err != nil {
 		panic(err)
 	}
-	objPoint := objTransInv.MultiplyTuple(point)
 
 	patTransInv, err := p.transform.Inverse()
 	if err != nil {

@@ -23,6 +23,14 @@ func New() *World {
 	}
 }
 
+func (w *World) String() string {
+	retval := fmt.Sprintf("Lights: %#v\n", w.Lights)
+	for _, o := range w.objects {
+		retval = retval + "\n" + o.String()
+	}
+	return retval
+}
+
 func (w *World) NumObjects() int {
 	return len(w.objects)
 }
@@ -65,9 +73,10 @@ func (w *World) ShadeHit(comps shapes.Computation, depth int) tuple.Color {
 		wg.Add(1)
 		go func(ind int, light fixtures.PointLight) {
 			shadowed := w.IsShadowed(comps.OverPoint, ind)
-			colorFromL[ind] = comps.Shape.GetMaterial().Lighting(comps.Shape.GetTransform(), light, comps.Point, comps.EyeV, comps.NormalV, shadowed)
-			reflect := w.ReflectedColor(comps, depth)
-			refract := w.RefractedColor(comps, depth)
+			colorFromL[ind] = comps.Shape.GetMaterial().Lighting(comps.Shape, light, comps.Point, comps.EyeV, comps.NormalV, shadowed)
+			// TODO: Actually do something with these errors
+			reflect, _ := w.ReflectedColor(comps, depth)
+			refract, _ := w.RefractedColor(comps, depth)
 			if comps.Shape.GetMaterial().Reflective() > 0.0 && comps.Shape.GetMaterial().Transparency() > 0.0 {
 				reflectence := comps.Schlick()
 				colorFromL[ind] = colorFromL[ind].Add(reflect.Mult(reflectence)).Add(refract.Mult((1 - reflectence)))
@@ -85,45 +94,55 @@ func (w *World) ShadeHit(comps shapes.Computation, depth int) tuple.Color {
 	return retval
 }
 
-func (w *World) RefractedColor(comps shapes.Computation, depth int) tuple.Color {
+func (w *World) RefractedColor(comps shapes.Computation, depth int) (tuple.Color, error) {
 	if depth == 0 || comps.Shape.GetMaterial().Transparency() == 0 {
-		return tuple.Black
+		return tuple.Black, nil
 	}
 	nRatio := comps.N1 / comps.N2
 	cosI := comps.EyeV.Dot(comps.NormalV)
 	sin2t := math.Pow(nRatio, 2) * (1 - math.Pow(cosI, 2))
 	if sin2t > 1 {
 		// This means that this case is total internal reflection
-		return tuple.Black
+		return tuple.Black, nil
 	}
 	cosT := math.Sqrt(1.0 - sin2t)
 	direction := comps.NormalV.Mult(nRatio*cosI - cosT).Subtract(comps.EyeV.Mult(nRatio))
 	refractRay, err := shapes.NewRay(comps.UnderPoint, direction)
 	if err != nil {
-		panic(err)
+		return tuple.Color{}, err
 	}
-	return w.ColorAt(refractRay, depth-1).Mult(comps.Shape.GetMaterial().Transparency())
+	c, err := w.ColorAt(refractRay, depth-1)
+	if err != nil {
+		return tuple.Color{}, err
+	}
+	return c.Mult(comps.Shape.GetMaterial().Transparency()), nil
 }
 
-func (w *World) ReflectedColor(comps shapes.Computation, depth int) tuple.Color {
+func (w *World) ReflectedColor(comps shapes.Computation, depth int) (tuple.Color, error) {
 	if comps.Shape.GetMaterial().Reflective() == 0 || depth <= 0 {
-		return tuple.Black
+		return tuple.Black, nil
 	}
 	reflectedRay, err := shapes.NewRay(comps.OverPoint, comps.ReflectV)
 	if err != nil {
-		panic(err)
+		return tuple.Color{}, err
 	}
-	c := w.ColorAt(reflectedRay, depth-1)
-	return c.Mult(comps.Shape.GetMaterial().Reflective())
+	c, err := w.ColorAt(reflectedRay, depth-1)
+	if err != nil {
+		return tuple.Color{}, err
+	}
+	return c.Mult(comps.Shape.GetMaterial().Reflective()), nil
 }
 
-func (w *World) ColorAt(r shapes.Ray, depth int) tuple.Color {
+func (w *World) ColorAt(r shapes.Ray, depth int) (tuple.Color, error) {
 	xs := w.IntersectRay(r)
 	if h, ok := shapes.Hit(xs...); ok {
-		comps := h.PrepareComputation(r, xs...)
-		return w.ShadeHit(comps, depth)
+		comps, err := h.PrepareComputation(r, xs...)
+		if err != nil {
+			return tuple.Color{}, err
+		}
+		return w.ShadeHit(comps, depth), nil
 	} else {
-		return tuple.Black
+		return tuple.Black, nil
 	}
 }
 

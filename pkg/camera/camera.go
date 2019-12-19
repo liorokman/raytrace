@@ -115,7 +115,10 @@ func (c Camera) Render(w *world.World) canvas.Canvas {
 					return
 				}
 				ray := c.RayForPixel(unit.x, unit.y)
-				color := w.ColorAt(ray, 4)
+				color, err := w.ColorAt(ray, 4)
+				if err != nil {
+					panic(err)
+				}
 				image.SetPixel(unit.x, unit.y, color)
 			}
 		}()

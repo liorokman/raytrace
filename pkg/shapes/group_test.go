@@ -1,6 +1,7 @@
 package shapes
 
 import (
+	"math"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -8,6 +9,28 @@ import (
 	"github.com/liorokman/raytrace/pkg/matrix"
 	"github.com/liorokman/raytrace/pkg/tuple"
 )
+
+func TestGroupWorldToObject(t *testing.T) {
+	g := NewGomegaWithT(t)
+	group1 := NewGroup().WithTransform(matrix.NewRotateY(math.Pi / 2.0))
+	group2 := NewGroup().WithTransform(matrix.NewScale(2, 2, 2))
+	group2, err := Connect(group1, group2)
+	g.Expect(err).To(BeNil())
+	g.Expect(group2.Parent().ID()).To(Equal(group1.ID()))
+	sphere := NewSphere().WithTransform(matrix.NewTranslation(5, 0, 0))
+	sphere, err = Connect(group2, sphere)
+	g.Expect(err).To(BeNil())
+	g.Expect(sphere.Parent().ID()).To(Equal(group2.ID()))
+
+	p, err := sphere.WorldToObject(tuple.NewPoint(-2, 0, -10))
+	g.Expect(err).To(BeNil())
+	g.Expect(p.Equals(tuple.NewPoint(0, 0, -1))).To(BeTrue())
+
+	v, err := sphere.NormalToWorld(tuple.NewVector(math.Sqrt(3.0)/3.0, math.Sqrt(3.0)/3.0, math.Sqrt(3.0)/3.0))
+	g.Expect(err).To(BeNil())
+	g.Expect(v.Equals(tuple.NewVector(0.2857, 0.4286, -0.8571)))
+
+}
 
 func TestGroups(t *testing.T) {
 

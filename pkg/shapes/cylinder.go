@@ -1,6 +1,7 @@
 package shapes
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/liorokman/raytrace/pkg/material"
@@ -20,6 +21,10 @@ func NewCylinder() Shape {
 		Min: math.Inf(-1),
 		Max: math.Inf(1),
 	})
+}
+
+func (c cylinder) String() string {
+	return fmt.Sprintf("Min: %f Max: %f Closed: %t", c.Min, c.Max, c.Closed)
 }
 
 func NewConstrainedCylinder(min, max float64, closed bool) Shape {

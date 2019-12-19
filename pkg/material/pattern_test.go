@@ -62,13 +62,14 @@ func TestCheckerPattern(t *testing.T) {
 
 func TestPatternAt(t *testing.T) {
 	g := NewGomegaWithT(t)
-	transform := matrix.NewScale(2, 2, 2)
+
+	transform := testShape{matrix.NewScale(2, 2, 2)}
 
 	p := NewStripePattern(tuple.White, tuple.Black)
 	g.Expect(p.PatternAtObject(transform, tuple.NewPoint(1.5, 0, 0))).To(Equal(tuple.White))
 
 	p = p.WithTransform(matrix.NewScale(2, 2, 2))
-	g.Expect(p.PatternAtObject(matrix.NewIdentity(), tuple.NewPoint(1.5, 0, 0))).To(Equal(tuple.White))
+	g.Expect(p.PatternAtObject(testShape{matrix.NewIdentity()}, tuple.NewPoint(1.5, 0, 0))).To(Equal(tuple.White))
 
 	g.Expect(p.PatternAtObject(transform, tuple.NewPoint(1.5, 0, 0))).To(Equal(tuple.White))
 }

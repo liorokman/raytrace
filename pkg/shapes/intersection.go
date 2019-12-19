@@ -53,13 +53,17 @@ func (i Intersection) Equals(other Intersection) bool {
 	return utils.FloatEqual(i.T, other.T) && i.Shape.ID() == other.Shape.ID()
 }
 
-func (i Intersection) PrepareComputation(r Ray, xs ...Intersection) Computation {
+func (i Intersection) PrepareComputation(r Ray, xs ...Intersection) (Computation, error) {
 	retval := Computation{
 		Intersection: i,
 		Point:        r.Position(i.T),
 		EyeV:         r.Direction.Mult(-1),
 	}
-	retval.NormalV = i.Shape.NormalAt(retval.Point)
+	var err error
+	retval.NormalV, err = i.Shape.NormalAt(retval.Point)
+	if err != nil {
+		return retval, err
+	}
 	// Check if the intersection happens from the inside of the shape
 	if retval.NormalV.Dot(retval.EyeV) < 0 {
 		retval.Inside = true
@@ -93,7 +97,7 @@ func (i Intersection) PrepareComputation(r Ray, xs ...Intersection) Computation 
 			break
 		}
 	}
-	return retval
+	return retval, nil
 }
 
 func (c Computation) Schlick() float64 {

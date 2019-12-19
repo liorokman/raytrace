@@ -16,12 +16,16 @@ type Shape interface {
 
 	WithTransform(matrix.Matrix) Shape
 	WithMaterial(material.Material) Shape
-	NormalAt(tuple.Tuple) tuple.Tuple
+	NormalAt(tuple.Tuple) (tuple.Tuple, error)
 	LocalIntersect(ray Ray) []Intersection
+	WorldToObject(point tuple.Tuple) (tuple.Tuple, error)
+	NormalToWorld(vector tuple.Tuple) (tuple.Tuple, error)
 
 	SetParent(p Shape) Shape
 	Parent() Shape
 	InnerShape() ShapeDetails
+
+	String() string
 }
 
 type ShapeList []Shape
@@ -55,6 +59,10 @@ type shapeCore struct {
 	parent    Shape
 }
 
+func (s shapeCore) String() string {
+	return fmt.Sprintf("ID: %s, transform: %#v, material: %#v, shape details: %s\n", s.ID(), s.transform, s.material, s.shape)
+}
+
 func (s shapeCore) InnerShape() ShapeDetails {
 	return s.shape
 }
@@ -85,21 +93,55 @@ func newShape(m material.Material, t matrix.Matrix, s ShapeDetails) shapeCore {
 	}
 }
 
-func (s shapeCore) NormalAt(point tuple.Tuple) tuple.Tuple {
+func (s shapeCore) NormalAt(point tuple.Tuple) (tuple.Tuple, error) {
 	if !point.IsPoint() {
-		panic("Can't compute a normal at a Vector")
+		return tuple.Tuple{}, fmt.Errorf("Can't compute a normal at a Vector")
 	}
-	shapeInverseTransform, err := s.GetTransform().Inverse()
+
+	localPoint, err := s.WorldToObject(point)
 	if err != nil {
-		panic(err)
+		return tuple.Tuple{}, err
 	}
-	objPoint := shapeInverseTransform.MultiplyTuple(point)
+	localNormal := s.shape.normalAt(localPoint)
+	normal, err := s.NormalToWorld(localNormal)
+	if err != nil {
+		return tuple.Tuple{}, err
+	}
+	return normal, nil
+}
 
-	objNormal := s.shape.normalAt(objPoint)
+func (s shapeCore) NormalToWorld(vector tuple.Tuple) (tuple.Tuple, error) {
+	inv, err := s.transform.Inverse()
+	if err != nil {
+		return tuple.Tuple{}, err
+	}
+	retval := inv.Transpose().MultiplyTuple(vector)
+	retval[tuple.WPos] = 0
+	retval = retval.Normalize()
 
-	worldNormal := shapeInverseTransform.Transpose().MultiplyTuple(objNormal)
-	worldNormal[tuple.WPos] = 0
-	return worldNormal.Normalize()
+	if s.Parent() != nil {
+		retval, err = s.Parent().NormalToWorld(retval)
+		if err != nil {
+			return tuple.Tuple{}, err
+		}
+	}
+	return retval, nil
+}
+
+func (s shapeCore) WorldToObject(point tuple.Tuple) (tuple.Tuple, error) {
+	var err error
+	retval := point
+	if s.Parent() != nil {
+		retval, err = s.Parent().WorldToObject(point)
+		if err != nil {
+			return retval, err
+		}
+	}
+	inv, err := s.transform.Inverse()
+	if err != nil {
+		return retval, err
+	}
+	return inv.MultiplyTuple(retval), nil
 }
 
 func (s shapeCore) LocalIntersect(ray Ray) []Intersection {

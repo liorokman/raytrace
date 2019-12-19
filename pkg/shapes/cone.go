@@ -1,6 +1,7 @@
 package shapes
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/liorokman/raytrace/pkg/material"
@@ -24,6 +25,10 @@ func NewCone() Shape {
 
 func (c cone) shapeIdPrefix() string {
 	return "CO"
+}
+
+func (c cone) String() string {
+	return fmt.Sprintf("Min: %f Max: %f Closed: %t", c.Min, c.Max, c.Closed)
 }
 
 func NewConstrainedCone(min, max float64, closed bool) Shape {

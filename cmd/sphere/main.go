@@ -8,7 +8,6 @@ import (
 	"github.com/liorokman/raytrace/pkg/canvas"
 	"github.com/liorokman/raytrace/pkg/fixtures"
 	"github.com/liorokman/raytrace/pkg/material"
-	"github.com/liorokman/raytrace/pkg/ray"
 	"github.com/liorokman/raytrace/pkg/shapes"
 	"github.com/liorokman/raytrace/pkg/tuple"
 )
@@ -48,18 +47,18 @@ func main() {
 
 			position := tuple.NewPoint(float64(worldX), float64(worldY), *wallZ)
 
-			r, err := ray.New(eye, position.Subtract(eye).Normalize())
+			r, err := shapes.NewRay(eye, position.Subtract(eye).Normalize())
 			if err != nil {
 				panic(err)
 			}
 			xs := r.Intersect(shape)
-			if h, ok := ray.Hit(xs...); ok {
+			if h, ok := shapes.Hit(xs...); ok {
 
 				p := r.Position(h.T)
-				n := h.Shape.NormalAt(p)
+				n, _ := h.Shape.NormalAt(p)
 				eyev := r.Direction.Mult(-1)
 
-				c.SetPixel(uint32(x), uint32(y), h.Shape.GetMaterial().Lighting(l, p, eyev, n))
+				c.SetPixel(uint32(x), uint32(y), h.Shape.GetMaterial().Lighting(h.Shape, l, p, eyev, n, false))
 			}
 
 		}
@@ -78,7 +77,7 @@ func main() {
 
 	file, err := os.Create(*filename)
 	if err != nil {
-		fmt.Printf("Failed to open %s for output: %s\n", filename, err.Error())
+		fmt.Printf("Failed to open %s for output: %s\n", *filename, err.Error())
 		os.Exit(1)
 	}
 	defer file.Close()

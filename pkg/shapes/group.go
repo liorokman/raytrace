@@ -13,6 +13,14 @@ type Group struct {
 	content map[string]Shape
 }
 
+func (g Group) String() string {
+	retval := "\n"
+	for _, s := range g.content {
+		retval = retval + "\t" + s.String() + "\n"
+	}
+	return retval
+}
+
 func NewGroup() Shape {
 	return newShape(material.Default(), matrix.NewIdentity(), Group{
 		content: map[string]Shape{},
@@ -42,7 +50,7 @@ func (g Group) shapeIdPrefix() string {
 }
 
 func (g Group) normalAt(point tuple.Tuple) tuple.Tuple {
-	return tuple.NewVector(0, 0, 1)
+	panic("group NormalAt should never be called")
 }
 
 func (g Group) localIntersect(ray Ray, outer Shape) []Intersection {
