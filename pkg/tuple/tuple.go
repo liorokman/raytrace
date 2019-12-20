@@ -1,6 +1,7 @@
 package tuple
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/liorokman/raytrace/pkg/utils"
@@ -14,6 +15,10 @@ const (
 )
 
 type Tuple [4]float64
+
+func (t Tuple) String() string {
+	return fmt.Sprintf("(%f,%f,%f,%f)", t[0], t[1], t[2], t[3])
+}
 
 func (t Tuple) X() float64 {
 	return t[XPos]

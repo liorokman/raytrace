@@ -28,6 +28,7 @@ const (
 	CYLINDER = "cylinder"
 	CONE     = "cone"
 	GROUP    = "group"
+	TRIANGLE = "triangle"
 
 	// patterns
 	SOLID    = "solid"
@@ -72,6 +73,35 @@ func (f fixture) toFixture() (fixtures.PointLight, error) {
 	}
 }
 
+func extractFloatSliceParam(bag map[string]interface{}, name string) ([]float64, bool, error) {
+	if val, ok := bag[name]; ok {
+		if arr, ok := val.([]interface{}); ok {
+			r := make([]float64, len(arr))
+			for i := range arr {
+				switch fval := arr[i].(type) {
+				case float64:
+					r[i] = fval
+				case int:
+					r[i] = float64(fval)
+				}
+			}
+			return r, true, nil
+		} else {
+			return []float64{}, false, fmt.Errorf("%s found but is not an array", name)
+		}
+	} else {
+		return []float64{}, false, nil
+	}
+}
+
+func sliceToPoint(s []float64) (Point, error) {
+
+	if len(s) == 3 {
+		return Point{s[0], s[1], s[2]}, nil
+	}
+	return Point{}, fmt.Errorf("Mismatched number of indices for a point")
+}
+
 func extractFloatParam(bag map[string]interface{}, name string) (float64, bool, error) {
 	if val, ok := bag[name]; ok {
 		switch fval := val.(type) {
@@ -94,6 +124,40 @@ func newShape(sType string, params map[string]interface{}) (shapes.Shape, error)
 		return shapes.NewPlane(), nil
 	case CUBE:
 		return shapes.NewCube(), nil
+	case TRIANGLE:
+		p1Raw, ok, err := extractFloatSliceParam(params, "p1")
+		if err != nil {
+			return nil, err
+		} else if !ok {
+			return nil, fmt.Errorf("triangle needs a p1 coordinate, none supplied")
+		}
+		p1, err := sliceToPoint(p1Raw)
+		if err != nil {
+			return nil, err
+		}
+		p2Raw, ok, err := extractFloatSliceParam(params, "p2")
+		if err != nil {
+			return nil, err
+		} else if !ok {
+			return nil, fmt.Errorf("triangle needs a p1 coordinate, none supplied")
+		}
+		p2, err := sliceToPoint(p2Raw)
+		if err != nil {
+			return nil, err
+		}
+
+		p3Raw, ok, err := extractFloatSliceParam(params, "p3")
+		if err != nil {
+			return nil, err
+		} else if !ok {
+			return nil, fmt.Errorf("triangle needs a p1 coordinate, none supplied")
+		}
+		p3, err := sliceToPoint(p3Raw)
+		if err != nil {
+			return nil, err
+		}
+		return shapes.NewTriangle(p1.ToPoint(), p2.ToPoint(), p3.ToPoint()), nil
+
 	case GROUP:
 		g := shapes.NewGroup()
 		if val, ok := params["content"]; ok {
