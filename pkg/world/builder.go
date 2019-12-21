@@ -175,6 +175,16 @@ func newShape(sType string, params map[string]interface{}) (shapes.Shape, error)
 					return nil, err
 				}
 			}
+		} else if val, ok := params["objfile"]; ok {
+			if strVal, ok := val.(string); ok {
+				objIn := newObjReader()
+				if err := objIn.ReadObj(strVal); err != nil {
+					return nil, err
+				}
+				return objIn.AsGroup(), nil
+			} else {
+				return nil, fmt.Errorf("group parameter objfile isn't a string")
+			}
 		}
 		return g, nil
 	case CYLINDER:
