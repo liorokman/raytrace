@@ -42,7 +42,7 @@ func main() {
 
 	file, err := os.Create(*filename)
 	if err != nil {
-		fmt.Printf("Failed to open %s for output: %s\n", filename, err.Error())
+		fmt.Printf("Failed to open %s for output: %s\n", *filename, err.Error())
 		os.Exit(1)
 	}
 	defer file.Close()
