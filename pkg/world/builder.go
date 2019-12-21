@@ -15,9 +15,10 @@ import (
 )
 
 type world struct {
-	Objects  []object
-	Fixtures []fixture
-	Camera   Cam
+	Objects   []object
+	Fixtures  []fixture
+	Materials []materialInput
+	Camera    Cam
 }
 
 const (
@@ -116,7 +117,7 @@ func extractFloatParam(bag map[string]interface{}, name string) (float64, bool, 
 	}
 }
 
-func newShape(sType string, params map[string]interface{}) (shapes.Shape, error) {
+func newShape(sType string, params map[string]interface{}, cache map[string]material.Material) (shapes.Shape, error) {
 	switch sType {
 	case SPHERE:
 		return shapes.NewSphere(), nil
@@ -167,7 +168,7 @@ func newShape(sType string, params map[string]interface{}) (shapes.Shape, error)
 				return nil, err
 			}
 			for _, o := range content {
-				s, err := translater(o)
+				s, err := translater(o, cache)
 				if err != nil {
 					return nil, err
 				}
@@ -240,20 +241,7 @@ type materialInput struct {
 	Params  map[string]interface{} `yaml:",inline"`
 }
 
-func (m materialInput) toMaterial() (material.Material, error) {
-	pat, err := m.Pattern.toPattern()
-	if err != nil {
-		return material.Material{}, err
-	}
-	finalTransform := matrix.NewIdentity()
-	for _, t := range m.Pattern.Transform {
-		if mat, err := t.toMatrix(); err != nil {
-			return material.Material{}, err
-		} else {
-			finalTransform = finalTransform.Multiply(mat)
-		}
-	}
-	pat = pat.WithTransform(finalTransform)
+func (m materialInput) toMaterial(cache map[string]material.Material) (material.Material, error) {
 	mb := material.NewBuilder(material.Default())
 	if matType, ok := m.Params["preset"]; ok {
 		if str, ok := matType.(string); ok {
@@ -263,11 +251,31 @@ func (m materialInput) toMaterial() (material.Material, error) {
 			case GLASSMATERIAL:
 				mb = material.NewBuilder(material.Glass())
 			default:
+				if cache != nil {
+					if cached, ok := cache[str]; ok {
+						return cached, nil
+					}
+				}
 				mb = material.NewBuilder(material.Default())
 			}
 		}
 	}
-	mb = mb.WithPattern(pat)
+	{
+		pat, err := m.Pattern.toPattern()
+		if err != nil {
+			return material.Material{}, err
+		}
+		finalTransform := matrix.NewIdentity()
+		for _, t := range m.Pattern.Transform {
+			if mat, err := t.toMatrix(); err != nil {
+				return material.Material{}, err
+			} else {
+				finalTransform = finalTransform.Multiply(mat)
+			}
+		}
+		pat = pat.WithTransform(finalTransform)
+		mb = mb.WithPattern(pat)
+	}
 	for k := range m.Params {
 		switch k {
 		case AMBIENT:
@@ -312,6 +320,11 @@ func (m materialInput) toMaterial() (material.Material, error) {
 			} else if ok {
 				mb.WithRefractiveIndex(val)
 			}
+		}
+	}
+	if cache != nil {
+		if cacheName, ok := m.Params["name"]; ok {
+			cache[fmt.Sprintf("%s", cacheName)] = mb.Build()
 		}
 	}
 
@@ -423,8 +436,8 @@ func (t transform) toMatrix() (matrix.Matrix, error) {
 	}
 }
 
-func translater(o object) (shapes.Shape, error) {
-	s, err := newShape(o.Type, o.Params)
+func translater(o object, cache map[string]material.Material) (shapes.Shape, error) {
+	s, err := newShape(o.Type, o.Params, cache)
 	if err != nil {
 		return nil, err
 	}
@@ -438,7 +451,7 @@ func translater(o object) (shapes.Shape, error) {
 	}
 	s = s.WithTransform(finalTransform)
 	if o.Material != nil {
-		mat, err := o.Material.toMaterial()
+		mat, err := o.Material.toMaterial(cache)
 		if err != nil {
 			return nil, err
 		}
@@ -461,8 +474,14 @@ func NewWorld(file string) (*World, Cam, error) {
 		objects: []shapes.Shape{},
 		Lights:  []fixtures.PointLight{},
 	}
+	materialCache := map[string]material.Material{}
+	for _, m := range w.Materials {
+		if _, err := m.toMaterial(materialCache); err != nil {
+			return nil, Cam{}, err
+		}
+	}
 	for _, o := range w.Objects {
-		s, err := translater(o)
+		s, err := translater(o, materialCache)
 		if err != nil {
 			return nil, Cam{}, err
 		}
