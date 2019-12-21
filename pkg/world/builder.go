@@ -188,9 +188,7 @@ func newShape(sType string, params map[string]interface{}, cache map[string]mate
 			}
 		}
 		return g, nil
-	case CYLINDER:
-		fallthrough
-	case CONE:
+	case CONE, CYLINDER: // These two shapes have the same parameters
 		closed := false
 		min := math.Inf(-1)
 		max := math.Inf(1)
