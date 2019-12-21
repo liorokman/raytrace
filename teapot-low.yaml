@@ -12,5 +12,8 @@ fixtures:
   color: [ 1, 1, 1 ]
 objects:
 - type: group
+  transform:
+  - type: rotatex
+    params: [ -1.507 ]
   params:
     objfile: objs/teapot-low.obj

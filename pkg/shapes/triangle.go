@@ -37,7 +37,7 @@ func (t triangle) shapeIdPrefix() string {
 	return "T"
 }
 
-func (t triangle) normalAt(point tuple.Tuple) tuple.Tuple {
+func (t triangle) normalAt(point tuple.Tuple, hit Intersection) tuple.Tuple {
 	return t.Normal
 }
 
@@ -62,5 +62,5 @@ func (t triangle) localIntersect(ray Ray, outer Shape) []Intersection {
 		return []Intersection{}
 	}
 
-	return []Intersection{{f * t.E2.Dot(originCrossE1), outer}}
+	return []Intersection{{T: f * t.E2.Dot(originCrossE1), Shape: outer}}
 }

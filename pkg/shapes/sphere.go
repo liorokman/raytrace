@@ -23,7 +23,7 @@ func (s sphere) shapeIdPrefix() string {
 	return "S"
 }
 
-func (s sphere) normalAt(point tuple.Tuple) tuple.Tuple {
+func (s sphere) normalAt(point tuple.Tuple, hit Intersection) tuple.Tuple {
 	return point.Subtract(tuple.NewPoint(0, 0, 0))
 }
 
@@ -41,7 +41,7 @@ func (s sphere) localIntersect(ray Ray, outer Shape) []Intersection {
 	}
 	rootOfDisc := math.Sqrt(disc)
 	return []Intersection{
-		{(-b - rootOfDisc) / (2.0 * a), outer},
-		{(-b + rootOfDisc) / (2.0 * a), outer},
+		{T: (-b - rootOfDisc) / (2.0 * a), Shape: outer},
+		{T: (-b + rootOfDisc) / (2.0 * a), Shape: outer},
 	}
 }

@@ -10,6 +10,7 @@ import (
 type Intersection struct {
 	T     float64
 	Shape Shape
+	U, V  float64
 }
 
 type Computation struct {
@@ -35,7 +36,7 @@ func Hit(i ...Intersection) (Intersection, bool) {
 	if len(i) == 0 {
 		return Intersection{}, false
 	}
-	curr := Intersection{math.MaxFloat64, nil}
+	curr := Intersection{T: math.MaxFloat64, Shape: nil}
 	for _, j := range i {
 		if j.T >= 0 && j.T < curr.T {
 			curr = j
@@ -60,7 +61,7 @@ func (i Intersection) PrepareComputation(r Ray, xs ...Intersection) (Computation
 		EyeV:         r.Direction.Mult(-1),
 	}
 	var err error
-	retval.NormalV, err = i.Shape.NormalAt(retval.Point)
+	retval.NormalV, err = i.Shape.NormalAt(retval.Point, i)
 	if err != nil {
 		return retval, err
 	}

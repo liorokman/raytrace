@@ -16,7 +16,7 @@ type Shape interface {
 
 	WithTransform(matrix.Matrix) Shape
 	WithMaterial(material.Material) Shape
-	NormalAt(tuple.Tuple) (tuple.Tuple, error)
+	NormalAt(tuple.Tuple, Intersection) (tuple.Tuple, error)
 	LocalIntersect(ray Ray) []Intersection
 	WorldToObject(point tuple.Tuple) (tuple.Tuple, error)
 	NormalToWorld(vector tuple.Tuple) (tuple.Tuple, error)
@@ -41,7 +41,7 @@ func (s ShapeList) Find(needle Shape) int {
 
 type ShapeDetails interface {
 	shapeIdPrefix() string
-	normalAt(tuple.Tuple) tuple.Tuple
+	normalAt(tuple.Tuple, Intersection) tuple.Tuple
 	localIntersect(ray Ray, outer Shape) []Intersection
 }
 
@@ -93,7 +93,7 @@ func newShape(m material.Material, t matrix.Matrix, s ShapeDetails) shapeCore {
 	}
 }
 
-func (s shapeCore) NormalAt(point tuple.Tuple) (tuple.Tuple, error) {
+func (s shapeCore) NormalAt(point tuple.Tuple, hit Intersection) (tuple.Tuple, error) {
 	if !point.IsPoint() {
 		return tuple.Tuple{}, fmt.Errorf("Can't compute a normal at a Vector")
 	}
@@ -102,7 +102,7 @@ func (s shapeCore) NormalAt(point tuple.Tuple) (tuple.Tuple, error) {
 	if err != nil {
 		return tuple.Tuple{}, err
 	}
-	localNormal := s.shape.normalAt(localPoint)
+	localNormal := s.shape.normalAt(localPoint, hit)
 	normal, err := s.NormalToWorld(localNormal)
 	if err != nil {
 		return tuple.Tuple{}, err

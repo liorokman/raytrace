@@ -20,7 +20,7 @@ func (c cube) shapeIdPrefix() string {
 	return "C"
 }
 
-func (c cube) normalAt(point tuple.Tuple) tuple.Tuple {
+func (c cube) normalAt(point tuple.Tuple, hit Intersection) tuple.Tuple {
 	maxc := math.Max(math.Max(math.Abs(point.X()), math.Abs(point.Y())), math.Abs(point.Z()))
 	if maxc == math.Abs(point.X()) {
 		return tuple.NewVector(point.X(), 0, 0)
@@ -41,8 +41,8 @@ func (c cube) localIntersect(ray Ray, outer Shape) []Intersection {
 		return []Intersection{}
 	}
 	return []Intersection{
-		{min, outer},
-		{max, outer},
+		{T: min, Shape: outer},
+		{T: max, Shape: outer},
 	}
 }
 

@@ -39,7 +39,7 @@ func (c cylinder) shapeIdPrefix() string {
 	return "CY"
 }
 
-func (c cylinder) normalAt(point tuple.Tuple) tuple.Tuple {
+func (c cylinder) normalAt(point tuple.Tuple, hit Intersection) tuple.Tuple {
 	dist := point.X()*point.X() + point.Z()*point.Z()
 	if dist < 1 && point.Y() >= (c.Max-utils.EPSILON) {
 		return tuple.NewVector(0, 1, 0)

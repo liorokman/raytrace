@@ -36,7 +36,7 @@ func (r Ray) Intersect(shape Shape) []Intersection {
 
 	retval := make([]Intersection, len(ints))
 	for i := range ints {
-		retval[i] = Intersection{ints[i].T, ints[i].Shape}
+		retval[i] = Intersection{T: ints[i].T, Shape: ints[i].Shape}
 	}
 	return retval
 }

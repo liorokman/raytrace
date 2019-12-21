@@ -20,7 +20,7 @@ func (p plane) shapeIdPrefix() string {
 	return "P"
 }
 
-func (p plane) normalAt(tuple.Tuple) tuple.Tuple {
+func (p plane) normalAt(tuple.Tuple, Intersection) tuple.Tuple {
 	return tuple.NewVector(0, 1, 0)
 }
 

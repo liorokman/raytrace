@@ -49,7 +49,7 @@ func (g Group) shapeIdPrefix() string {
 	return "G"
 }
 
-func (g Group) normalAt(point tuple.Tuple) tuple.Tuple {
+func (g Group) normalAt(point tuple.Tuple, hit Intersection) tuple.Tuple {
 	panic("group NormalAt should never be called")
 }
 
