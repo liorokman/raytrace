@@ -2,7 +2,6 @@ package matrix
 
 import (
 	"fmt"
-	"math"
 
 	"github.com/liorokman/raytrace/pkg/tuple"
 	"github.com/liorokman/raytrace/pkg/utils"
@@ -106,7 +105,11 @@ func (m Matrix) Minor(row, col int) float64 {
 }
 
 func (m Matrix) Cofactor(row, col int) float64 {
-	return math.Pow(-1, float64(row+col)) * m.Minor(row, col)
+	retval := m.Minor(row, col)
+	if (row+col)%2 == 1 {
+		retval = -retval
+	}
+	return retval
 }
 
 func (m Matrix) Inverse() (Matrix, error) {
