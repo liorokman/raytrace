@@ -1,0 +1,16 @@
+---
+camera:
+  hsize: 400
+  vsize: 400
+  fieldOfView: 1.0471975512 # Pi/3.0
+  from: [ -5, 1.5, -50 ] # point
+  to: [ 0, 1, 0 ] # point
+  up: [0, 1, 0 ] # vector
+fixtures:
+- type: pointlight
+  position: [ -10, 10, -10 ]
+  color: [ 1, 1, 1 ]
+objects:
+- type: group
+  params:
+    objfile: objs/teapot-low.obj

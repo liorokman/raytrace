@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"math"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -48,7 +49,8 @@ func toIntSlice(in []string) ([]int, error) {
 	r := make([]int, len(in))
 	for i := range in {
 		var err error
-		r[i], err = strconv.Atoi(in[i])
+		parts := strings.Split(in[i], "/")
+		r[i], err = strconv.Atoi(parts[0])
 		if err != nil {
 			return []int{}, err
 		}
@@ -70,6 +72,7 @@ func (o *objReader) ReadObj(filename string) error {
 		return err
 	}
 
+	whitespaceSqueezer := regexp.MustCompile("(\\s)\\s*")
 	currentGroup := "defaultGroup"
 	scan := bufio.NewScanner(in)
 	for scan.Scan() {
@@ -77,6 +80,7 @@ func (o *objReader) ReadObj(filename string) error {
 		if ind := strings.Index(line, "#"); ind >= 0 {
 			line = line[0:ind]
 		}
+		line = whitespaceSqueezer.ReplaceAllString(line, "$1")
 		if line == "" {
 			continue
 		}
