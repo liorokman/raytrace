@@ -57,12 +57,14 @@ func TestViewTransformation(t *testing.T) {
 	up = tuple.NewVector(1, 1, 0)
 	v = ViewTransformation(from, to, up)
 
-	g.Expect(v.Equals(matrix.Matrix{
-		{-0.50709, 0.50709, 0.67612, -2.36643},
-		{0.76772, 0.60609, 0.12122, -2.82843},
-		{-0.35857, 0.59761, -0.71714, 0},
-		{0, 0, 0, 1},
-	})).To(BeTrue())
+	resMatrix := matrix.New(4, 4)
+	resMatrix.Fill([]float64{
+		-0.50709, 0.50709, 0.67612, -2.36643,
+		0.76772, 0.60609, 0.12122, -2.82843,
+		-0.35857, 0.59761, -0.71714, 0,
+		0, 0, 0, 1},
+	)
+	g.Expect(v.Equals(resMatrix)).To(BeTrue())
 }
 
 func TestNewCamera(t *testing.T) {

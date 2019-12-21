@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math"
 	"sort"
-	"sync"
 
 	"github.com/liorokman/raytrace/pkg/fixtures"
 	"github.com/liorokman/raytrace/pkg/shapes"
@@ -67,26 +66,20 @@ func (w *World) IntersectRay(r shapes.Ray) []shapes.Intersection {
 }
 
 func (w *World) ShadeHit(comps shapes.Computation, depth int) tuple.Color {
-	wg := sync.WaitGroup{}
 	colorFromL := make([]tuple.Color, len(w.Lights))
-	for i, l := range w.Lights {
-		wg.Add(1)
-		go func(ind int, light fixtures.PointLight) {
-			shadowed := w.IsShadowed(comps.OverPoint, ind)
-			colorFromL[ind] = comps.Shape.GetMaterial().Lighting(comps.Shape, light, comps.Point, comps.EyeV, comps.NormalV, shadowed)
-			// TODO: Actually do something with these errors
-			reflect, _ := w.ReflectedColor(comps, depth)
-			refract, _ := w.RefractedColor(comps, depth)
-			if comps.Shape.GetMaterial().Reflective() > 0.0 && comps.Shape.GetMaterial().Transparency() > 0.0 {
-				reflectence := comps.Schlick()
-				colorFromL[ind] = colorFromL[ind].Add(reflect.Mult(reflectence)).Add(refract.Mult((1 - reflectence)))
-			} else {
-				colorFromL[ind] = colorFromL[ind].Add(reflect).Add(refract)
-			}
-			wg.Done()
-		}(i, l)
+	for ind, light := range w.Lights {
+		shadowed := w.IsShadowed(comps.OverPoint, ind)
+		colorFromL[ind] = comps.Shape.GetMaterial().Lighting(comps.Shape, light, comps.Point, comps.EyeV, comps.NormalV, shadowed)
+		// TODO: Actually do something with these errors
+		reflect, _ := w.ReflectedColor(comps, depth)
+		refract, _ := w.RefractedColor(comps, depth)
+		if comps.Shape.GetMaterial().Reflective() > 0.0 && comps.Shape.GetMaterial().Transparency() > 0.0 {
+			reflectence := comps.Schlick()
+			colorFromL[ind] = colorFromL[ind].Add(reflect.Mult(reflectence)).Add(refract.Mult((1 - reflectence)))
+		} else {
+			colorFromL[ind] = colorFromL[ind].Add(reflect).Add(refract)
+		}
 	}
-	wg.Wait()
 	retval := tuple.Black
 	for _, c := range colorFromL {
 		retval = retval.Add(c)

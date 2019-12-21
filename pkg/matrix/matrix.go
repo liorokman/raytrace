@@ -8,37 +8,43 @@ import (
 	"github.com/liorokman/raytrace/pkg/utils"
 )
 
-type Matrix [][]float64
+type Matrix struct {
+	rows, cols int
+	data       []float64
+}
+
+func (m Matrix) Fill(d []float64) {
+	copy(m.data[:], d[:])
+}
 
 func New(row, col int) Matrix {
-	m := make([][]float64, row)
-	for i, _ := range m {
-		m[i] = make([]float64, col)
+	return Matrix{
+		rows: row,
+		cols: col,
+		data: make([]float64, row*col),
 	}
-	return m
 }
 
 func (m Matrix) Equals(other Matrix) bool {
-	if len(m) != len(other) || len(m[0]) != len(other[0]) {
+	if m.rows != other.rows || m.cols != other.cols {
 		return false
 	}
-	for i := range m {
-		for j := range m[i] {
-			if !utils.FloatEqual(m[i][j], other[i][j]) {
-				return false
-			}
+	for i := 0; i < m.rows*m.cols; i++ {
+		if !utils.FloatEqual(m.data[i], other.data[i]) {
+			return false
 		}
 	}
 	return true
 }
 
 func (l Matrix) Multiply(r Matrix) Matrix {
-	result := New(len(l), len(r[0]))
+	result := New(l.rows, r.cols)
 
-	for i := range l {
-		for j := range r[i] {
-			for t := range l[j] {
-				result[i][j] = result[i][j] + l[i][t]*r[t][j]
+	for i := 0; i < l.rows; i++ {
+		for j := 0; j < r.cols; j++ {
+			for t := 0; t < l.cols; t++ {
+				result.data[i*r.cols+j] = result.data[i*r.cols+j] + l.data[i*l.cols+t]*
+					r.data[t*r.cols+j]
 			}
 		}
 	}
@@ -48,20 +54,19 @@ func (l Matrix) Multiply(r Matrix) Matrix {
 func (l Matrix) MultiplyTuple(r tuple.Tuple) tuple.Tuple {
 
 	right := Matrix{
-		[]float64{r.X()},
-		[]float64{r.Y()},
-		[]float64{r.Z()},
-		[]float64{r.W()},
+		rows: 4,
+		cols: 1,
+		data: []float64{r.X(), r.Y(), r.Z(), r.W()},
 	}
 	result := l.Multiply(right)
-	return tuple.Tuple{result[0][0], result[1][0], result[2][0], result[3][0]}
+	return tuple.Tuple{result.data[0], result.data[1], result.data[2], result.data[3]}
 }
 
 func (l Matrix) Transpose() Matrix {
-	result := New(len(l), len(l[0]))
-	for i := range l {
-		for j := range l[0] {
-			result[i][j] = l[j][i]
+	result := New(l.rows, l.cols)
+	for i := 0; i < l.rows; i++ {
+		for j := 0; j < l.cols; j++ {
+			result.data[i*result.rows+j] = l.data[j*l.rows+i]
 		}
 	}
 	return result
@@ -69,30 +74,29 @@ func (l Matrix) Transpose() Matrix {
 
 func (l Matrix) Submatrix(row, col int) Matrix {
 
-	result := New(len(l)-1, len(l[0])-1)
+	result := New(l.rows-1, l.cols-1)
 
-	for index := range l {
-		realI := index
-		switch {
-		case index == row:
+	for i := 0; i < l.rows; i++ {
+		if i == row {
 			continue
-		case index > row:
-			realI = realI - 1
 		}
-		copy(result[realI][0:col], l[index][0:col])
-		copy(result[realI][col:], l[index][col+1:])
+		targetRow := i
+		if i > row {
+			targetRow--
+		}
+		copy(result.data[targetRow*result.cols:targetRow*result.cols+col], l.data[i*l.cols:i*l.cols+col])
+		copy(result.data[targetRow*result.cols+col:(targetRow+1)*result.cols], l.data[i*l.cols+col+1:(i+1)*l.cols])
 	}
-
 	return result
 }
 
 func (m Matrix) Determinant() float64 {
-	if len(m) == 2 && len(m[0]) == 2 {
-		return m[0][0]*m[1][1] - m[0][1]*m[1][0]
+	if m.rows == 2 && m.cols == 2 {
+		return m.data[0]*m.data[3] - m.data[1]*m.data[2]
 	}
 	det := 0.0
-	for col := range m[0] {
-		det = det + m[0][col]*m.Cofactor(0, col)
+	for col := 0; col < m.cols; col++ {
+		det = det + m.data[col]*m.Cofactor(0, col)
 	}
 	return det
 }
@@ -110,11 +114,11 @@ func (m Matrix) Inverse() (Matrix, error) {
 	if utils.FloatEqual(d, 0.0) {
 		return m, fmt.Errorf("Matrix is not invertable")
 	}
-	result := New(len(m), len(m[0]))
-	for row := range m {
-		for col := range m[0] {
+	result := New(m.rows, m.cols)
+	for row := 0; row < m.rows; row++ {
+		for col := 0; col < m.cols; col++ {
 			c := m.Cofactor(row, col)
-			result[col][row] = c / d
+			result.data[col*m.rows+row] = c / d
 		}
 
 	}

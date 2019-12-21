@@ -396,41 +396,41 @@ func (t transform) toMatrix() (matrix.Matrix, error) {
 	switch t.Type {
 	case translate:
 		if len(t.Params) != 3 {
-			return nil, fmt.Errorf("Translate transform requires (x,y,z) parameters. Have %d params instead.", len(t.Params))
+			return matrix.Matrix{}, fmt.Errorf("Translate transform requires (x,y,z) parameters. Have %d params instead.", len(t.Params))
 		}
 		return matrix.NewTranslation(t.Params[0], t.Params[1], t.Params[2]), nil
 	case identity:
 		if len(t.Params) != 0 {
-			return nil, fmt.Errorf("Identity transform should not have parameters. Have %d params instead.", len(t.Params))
+			return matrix.Matrix{}, fmt.Errorf("Identity transform should not have parameters. Have %d params instead.", len(t.Params))
 		}
 		return matrix.NewIdentity(), nil
 	case scale:
 		if len(t.Params) != 3 {
-			return nil, fmt.Errorf("Scale transform requires (x,y,z) parameters. Have %d params instead.", len(t.Params))
+			return matrix.Matrix{}, fmt.Errorf("Scale transform requires (x,y,z) parameters. Have %d params instead.", len(t.Params))
 		}
 		return matrix.NewScale(t.Params[0], t.Params[1], t.Params[2]), nil
 	case rotatex:
 		if len(t.Params) != 1 {
-			return nil, fmt.Errorf("RotateX transform requires (radians) parameters. Have %d params instead.", len(t.Params))
+			return matrix.Matrix{}, fmt.Errorf("RotateX transform requires (radians) parameters. Have %d params instead.", len(t.Params))
 		}
 		return matrix.NewRotateX(t.Params[0]), nil
 	case rotatey:
 		if len(t.Params) != 1 {
-			return nil, fmt.Errorf("RotateY transform requires (radians) parameters. Have %d params instead.", len(t.Params))
+			return matrix.Matrix{}, fmt.Errorf("RotateY transform requires (radians) parameters. Have %d params instead.", len(t.Params))
 		}
 		return matrix.NewRotateY(t.Params[0]), nil
 	case rotatez:
 		if len(t.Params) != 1 {
-			return nil, fmt.Errorf("RotateZ transform requires (radians) parameters. Have %d params instead.", len(t.Params))
+			return matrix.Matrix{}, fmt.Errorf("RotateZ transform requires (radians) parameters. Have %d params instead.", len(t.Params))
 		}
 		return matrix.NewRotateZ(t.Params[0]), nil
 	case shear:
 		if len(t.Params) != 6 {
-			return nil, fmt.Errorf("Shear transform requires (xy, xz, yx, yz, zx, zy) parameters. Have %d params instead.", len(t.Params))
+			return matrix.Matrix{}, fmt.Errorf("Shear transform requires (xy, xz, yx, yz, zx, zy) parameters. Have %d params instead.", len(t.Params))
 		}
 		return matrix.NewShear(t.Params[0], t.Params[1], t.Params[2], t.Params[3], t.Params[4], t.Params[5]), nil
 	default:
-		return nil, fmt.Errorf("Unsupported transform '%s'", t.Type)
+		return matrix.Matrix{}, fmt.Errorf("Unsupported transform '%s'", t.Type)
 	}
 }
 

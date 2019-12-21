@@ -19,12 +19,13 @@ func ViewTransformation(from, to, up tuple.Tuple) matrix.Matrix {
 	left := forward.Cross(upn)
 	trueUp := left.Cross(forward)
 
-	orientation := matrix.Matrix{
-		{left.X(), left.Y(), left.Z(), 0},
-		{trueUp.X(), trueUp.Y(), trueUp.Z(), 0},
-		{-forward.X(), -forward.Y(), -forward.Z(), 0},
-		{0, 0, 0, 1},
-	}
+	orientation := matrix.New(4, 4)
+	orientation.Fill([]float64{
+		left.X(), left.Y(), left.Z(), 0,
+		trueUp.X(), trueUp.Y(), trueUp.Z(), 0,
+		-forward.X(), -forward.Y(), -forward.Z(), 0,
+		0, 0, 0, 1},
+	)
 	return orientation.Multiply(matrix.NewTranslation(-from.X(), -from.Y(), -from.Z()))
 }
 
@@ -103,7 +104,7 @@ func (c Camera) Render(w *world.World) canvas.Canvas {
 	image := canvas.New(c.hsize, c.vsize)
 
 	wg := sync.WaitGroup{}
-	q := make(queue, runtime.NumCPU())
+	q := make(queue, 2*runtime.NumCPU())
 
 	for cpu := 0; cpu < runtime.NumCPU()/len(w.Lights); cpu++ {
 		wg.Add(1)

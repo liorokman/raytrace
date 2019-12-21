@@ -3,7 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
+	"runtime/pprof"
 
 	"github.com/liorokman/raytrace/pkg/camera"
 	"github.com/liorokman/raytrace/pkg/tuple"
@@ -15,6 +18,8 @@ func main() {
 	var filename = flag.String("filename", "", "The file to write output to")
 	var scenefile = flag.String("scene", "", "The scene input file")
 	var frame = flag.Bool("frame", false, "Frame the canvas")
+	var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
+	var webpprof = flag.Bool("webpprof", false, "Launch a web-based pprof interface")
 
 	flag.Parse()
 	if *scenefile == "" {
@@ -26,6 +31,19 @@ func main() {
 		fmt.Printf("Must provide an output filename.\n")
 		flag.Usage()
 		os.Exit(1)
+	}
+	if *cpuprofile != "" {
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			fmt.Printf("%s\n", err.Error())
+			os.Exit(1)
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	} else if *webpprof {
+		go func() {
+			fmt.Println(http.ListenAndServe(":6060", nil))
+		}()
 	}
 
 	w, camInput, err := world.NewWorld(*scenefile)
