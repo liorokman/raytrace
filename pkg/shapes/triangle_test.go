@@ -17,7 +17,7 @@ func TestNewTriangle(t *testing.T) {
 	g.Expect(t1.InnerShape().(triangle).E2).To(Equal(tuple.NewVector(1, -1, 0)))
 	g.Expect(t1.InnerShape().(triangle).Normal).To(Equal(tuple.NewVector(0, 0, -1)))
 
-	n, err := t1.NormalAt(tuple.NewPoint(-0.5, 0.75, 0))
+	n, err := t1.NormalAt(tuple.NewPoint(-0.5, 0.75, 0), Intersection{})
 	g.Expect(err).To(BeNil())
 	g.Expect(t1.InnerShape().(triangle).Normal).To(Equal(n))
 }

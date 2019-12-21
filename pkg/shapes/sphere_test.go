@@ -34,20 +34,20 @@ func TestSphereNormal(t *testing.T) {
 
 	s1 := NewSphere()
 
-	n, err := s1.NormalAt(tuple.NewPoint(1, 0, 0))
+	n, err := s1.NormalAt(tuple.NewPoint(1, 0, 0), Intersection{})
 	g.Expect(err).To(BeNil())
 	g.Expect(n).To(Equal(tuple.NewVector(1, 0, 0)))
 
-	n, err = s1.NormalAt(tuple.NewPoint(0, 1, 0))
+	n, err = s1.NormalAt(tuple.NewPoint(0, 1, 0), Intersection{})
 	g.Expect(err).To(BeNil())
 	g.Expect(n).To(Equal(tuple.NewVector(0, 1, 0)))
 
-	n, err = s1.NormalAt(tuple.NewPoint(0, 0, 1))
+	n, err = s1.NormalAt(tuple.NewPoint(0, 0, 1), Intersection{})
 	g.Expect(err).To(BeNil())
 	g.Expect(n).To(Equal(tuple.NewVector(0, 0, 1)))
 
 	v := math.Sqrt(3.0) / 3.0
-	n, err = s1.NormalAt(tuple.NewPoint(v, v, v))
+	n, err = s1.NormalAt(tuple.NewPoint(v, v, v), Intersection{})
 	g.Expect(err).To(BeNil())
 	g.Expect(n).To(Equal(tuple.NewVector(v, v, v)))
 
@@ -59,13 +59,13 @@ func TestTransformedSphereNormal(t *testing.T) {
 
 	s1 := NewSphere().WithTransform(matrix.NewTranslation(0, 1, 0))
 
-	n, err := s1.NormalAt(tuple.NewPoint(0, 1.70711, -0.70711))
+	n, err := s1.NormalAt(tuple.NewPoint(0, 1.70711, -0.70711), Intersection{})
 	g.Expect(err).To(BeNil())
 	g.Expect(n.Equals(tuple.NewVector(0, 0.70711, -0.70711))).To(BeTrue())
 
 	s1 = NewSphere().WithTransform(matrix.NewScale(1, 0.5, 1).RotateZ(math.Pi / 5))
 	v := math.Sqrt(2.0) / 2
-	n, err = s1.NormalAt(tuple.NewPoint(0, v, -v))
+	n, err = s1.NormalAt(tuple.NewPoint(0, v, -v), Intersection{})
 	g.Expect(err).To(BeNil())
 	g.Expect(n.Equals(tuple.NewVector(0, 0.97014, -0.24254))).To(BeTrue())
 

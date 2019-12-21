@@ -24,7 +24,7 @@ func TestConeNormal(t *testing.T) {
 
 	for _, curr := range tests {
 
-		n, err := c.NormalAt(curr.point)
+		n, err := c.NormalAt(curr.point, Intersection{})
 		g.Expect(err).To(BeNil())
 		g.Expect(n).To(Equal(curr.normal.Normalize()))
 	}

@@ -27,7 +27,7 @@ func TestCubeNormal(t *testing.T) {
 	c := cube{}
 
 	for i := range tests {
-		norm := c.normalAt(tests[i].point)
+		norm := c.normalAt(tests[i].point, Intersection{})
 		g.Expect(norm.Equals(tests[i].normal)).To(BeTrue())
 	}
 }
