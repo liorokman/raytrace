@@ -12,6 +12,7 @@ materials: # A material dictionary that can be used in objects below
 - name:   # name of the material
   preset: # Any item in the material cache that appears above this item, or "glass" or "default"
   pattern: solid | gradient | ring | checker
+  colors: # Array of [r, g, b] colors to be used in the pattern. 1 color for "solid", 2 colors for the rest
   transform: # optional section, defaults to identity
   - type : identity | translate | scale | rotatex | rotatey | rotatez | shear
     params: # an array of floats that matches the transform type
@@ -19,7 +20,8 @@ materials: # A material dictionary that can be used in objects below
             # translate - [ x, y, z ] floats
             # scale - [ x, y, z ] floats
             # rotate x,y,z - [ radians ] 
-            # shear [ xy, xz, yx, yz, zx, zy ] floats
+            # shear [ xy, xz, yx, yz, zx, zy ] floats 
+  # all of the following material parameters are optional. The default is either the one written, or the one provided by the preset (if used)
   ambient: # float in the inclusive range [0,1]. Defaults to 0.1
   diffuse:  # float in the inclusive range [0,1]. Defaults to 0.9
   specular: # float in the inclusive range [0,1]. Defaults to 0/9
