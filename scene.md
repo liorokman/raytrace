@@ -23,7 +23,7 @@ materials: # A material dictionary that can be used in objects below
   ambient: # float in the inclusive range [0,1]. Defaults to 0.1
   diffuse:  # float in the inclusive range [0,1]. Defaults to 0.9
   specular: # float in the inclusive range [0,1]. Defaults to 0/9
-  shininess; # float in the inclusive range [0, inf ]. Defaults to 200
+  shininess: # float in the inclusive range [0, inf ]. Defaults to 200
   reflective: # float in the inclusive range [0,1]. Defaults to 0.0
   transparency:  # float in the inclusive range [0,1]: Defaults to 0.0
   refractiveIndex: # float in the inclusive range [0,inf ]: Defaults to 1.0 
