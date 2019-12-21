@@ -27,9 +27,9 @@ func newObjReader() *objReader {
 }
 
 const (
-	vertex = "v"
-	face   = "f"
-	group  = "g"
+	vertexInObj = "v"
+	faceInObj   = "f"
+	groupInObj  = "g"
 )
 
 func toFloat64Slice(in []string) ([]float64, error) {
@@ -82,7 +82,7 @@ func (o *objReader) ReadObj(filename string) error {
 		}
 		parts := strings.Split(line, " ")
 		switch parts[0] {
-		case vertex:
+		case vertexInObj:
 			coords, err := toFloat64Slice(parts[1:])
 			if err != nil {
 				return err
@@ -92,7 +92,7 @@ func (o *objReader) ReadObj(filename string) error {
 				continue
 			}
 			o.vertices = append(o.vertices, tuple.NewPoint(coords[0], coords[1], coords[2]))
-		case face:
+		case faceInObj:
 			vertices, err := toIntSlice(parts[1:])
 			if err != nil {
 				return err
@@ -113,7 +113,7 @@ func (o *objReader) ReadObj(filename string) error {
 				}
 			}
 			o.groups[currentGroup] = currGroup
-		case group:
+		case groupInObj:
 			o.groups[parts[1]] = shapes.NewGroup()
 			currentGroup = parts[1]
 		}

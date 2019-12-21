@@ -23,28 +23,28 @@ type world struct {
 
 const (
 	//shapes
-	SPHERE   = "sphere"
-	PLANE    = "plane"
-	CUBE     = "cube"
-	CYLINDER = "cylinder"
-	CONE     = "cone"
-	GROUP    = "group"
-	TRIANGLE = "triangle"
+	sphere   = "sphere"
+	plane    = "plane"
+	cube     = "cube"
+	cylinder = "cylinder"
+	cone     = "cone"
+	group    = "group"
+	triangle = "triangle"
 
 	// patterns
-	SOLID    = "solid"
-	GRADIENT = "gradient"
-	RING     = "ring"
-	CHECKERS = "checker"
+	solid    = "solid"
+	gradient = "gradient"
+	ring     = "ring"
+	checkers = "checker"
 
 	// translations
-	TRANSLATE = "translate"
-	IDENTITY  = "identity"
-	SCALE     = "scale"
-	ROTATEX   = "rotatex"
-	ROTATEY   = "rotatey"
-	ROTATEZ   = "rotatez"
-	SHEAR     = "shear"
+	translate = "translate"
+	identity  = "identity"
+	scale     = "scale"
+	rotatex   = "rotatex"
+	rotatey   = "rotatey"
+	rotatez   = "rotatez"
+	shear     = "shear"
 
 	// fixtures
 	POINTLIGHT = "pointlight"
@@ -119,13 +119,13 @@ func extractFloatParam(bag map[string]interface{}, name string) (float64, bool, 
 
 func newShape(sType string, params map[string]interface{}, cache map[string]material.Material) (shapes.Shape, error) {
 	switch sType {
-	case SPHERE:
+	case sphere:
 		return shapes.NewSphere(), nil
-	case PLANE:
+	case plane:
 		return shapes.NewPlane(), nil
-	case CUBE:
+	case cube:
 		return shapes.NewCube(), nil
-	case TRIANGLE:
+	case triangle:
 		p1Raw, ok, err := extractFloatSliceParam(params, "p1")
 		if err != nil {
 			return nil, err
@@ -159,7 +159,7 @@ func newShape(sType string, params map[string]interface{}, cache map[string]mate
 		}
 		return shapes.NewTriangle(p1.ToPoint(), p2.ToPoint(), p3.ToPoint()), nil
 
-	case GROUP:
+	case group:
 		g := shapes.NewGroup()
 		if val, ok := params["content"]; ok {
 			asYaml, _ := yaml.Marshal(val)
@@ -188,7 +188,7 @@ func newShape(sType string, params map[string]interface{}, cache map[string]mate
 			}
 		}
 		return g, nil
-	case CONE, CYLINDER: // These two shapes have the same parameters
+	case cone, cylinder: // These two shapes have the same parameters
 		closed := false
 		min := math.Inf(-1)
 		max := math.Inf(1)
@@ -211,7 +211,7 @@ func newShape(sType string, params map[string]interface{}, cache map[string]mate
 		} else if ok {
 			max = val
 		}
-		if sType == CONE {
+		if sType == cone {
 			return shapes.NewConstrainedCone(min, max, closed), nil
 		} else {
 			return shapes.NewConstrainedCylinder(min, max, closed), nil
@@ -222,16 +222,16 @@ func newShape(sType string, params map[string]interface{}, cache map[string]mate
 }
 
 const (
-	AMBIENT         = "ambient"
-	DIFFUSE         = "diffuse"
-	SPECULAR        = "specular"
-	SHININESS       = "shininess"
-	REFLECTIVE      = "reflective"
-	TRANSPARENCY    = "transparency"
-	REFRACTIVEINDEX = "refractiveIndex"
+	ambient         = "ambient"
+	diffuse         = "diffuse"
+	specular        = "specular"
+	shininess       = "shininess"
+	reflective      = "reflective"
+	transparency    = "transparency"
+	refractiveindex = "refractiveIndex"
 
-	DEFAULTMATERIAL = "default"
-	GLASSMATERIAL   = "glass"
+	defaultmaterial = "default"
+	glassmaterial   = "glass"
 )
 
 type materialInput struct {
@@ -244,9 +244,9 @@ func (m materialInput) toMaterial(cache map[string]material.Material) (material.
 	if matType, ok := m.Params["preset"]; ok {
 		if str, ok := matType.(string); ok {
 			switch str {
-			case DEFAULTMATERIAL:
+			case defaultmaterial:
 				mb = material.NewBuilder(material.Default())
-			case GLASSMATERIAL:
+			case glassmaterial:
 				mb = material.NewBuilder(material.Glass())
 			default:
 				if cache != nil {
@@ -276,44 +276,44 @@ func (m materialInput) toMaterial(cache map[string]material.Material) (material.
 	}
 	for k := range m.Params {
 		switch k {
-		case AMBIENT:
-			if val, ok, err := extractFloatParam(m.Params, AMBIENT); err != nil {
+		case ambient:
+			if val, ok, err := extractFloatParam(m.Params, ambient); err != nil {
 				return material.Material{}, err
 			} else if ok {
 				mb.WithAmbient(val)
 			}
-		case DIFFUSE:
-			if val, ok, err := extractFloatParam(m.Params, DIFFUSE); err != nil {
+		case diffuse:
+			if val, ok, err := extractFloatParam(m.Params, diffuse); err != nil {
 				return material.Material{}, err
 			} else if ok {
 				mb.WithDiffuse(val)
 			}
-		case SPECULAR:
-			if val, ok, err := extractFloatParam(m.Params, SPECULAR); err != nil {
+		case specular:
+			if val, ok, err := extractFloatParam(m.Params, specular); err != nil {
 				return material.Material{}, err
 			} else if ok {
 				mb.WithSpecular(val)
 			}
-		case SHININESS:
-			if val, ok, err := extractFloatParam(m.Params, SHININESS); err != nil {
+		case shininess:
+			if val, ok, err := extractFloatParam(m.Params, shininess); err != nil {
 				return material.Material{}, err
 			} else if ok {
 				mb.WithShininess(val)
 			}
-		case REFLECTIVE:
-			if val, ok, err := extractFloatParam(m.Params, REFLECTIVE); err != nil {
+		case reflective:
+			if val, ok, err := extractFloatParam(m.Params, reflective); err != nil {
 				return material.Material{}, err
 			} else if ok {
 				mb.WithReflective(val)
 			}
-		case TRANSPARENCY:
-			if val, ok, err := extractFloatParam(m.Params, TRANSPARENCY); err != nil {
+		case transparency:
+			if val, ok, err := extractFloatParam(m.Params, transparency); err != nil {
 				return material.Material{}, err
 			} else if ok {
 				mb.WithTransparency(val)
 			}
-		case REFRACTIVEINDEX:
-			if val, ok, err := extractFloatParam(m.Params, REFRACTIVEINDEX); err != nil {
+		case refractiveindex:
+			if val, ok, err := extractFloatParam(m.Params, refractiveindex); err != nil {
 				return material.Material{}, err
 			} else if ok {
 				mb.WithRefractiveIndex(val)
@@ -355,22 +355,22 @@ func (c Vector) ToVector() tuple.Tuple {
 
 func (p pattern) toPattern() (material.Pattern, error) {
 	switch p.Type {
-	case SOLID:
+	case solid:
 		if len(p.Colors) != 1 {
 			return material.Pattern{}, fmt.Errorf("Solid pattern requires exactly one parameter. Have %d parameters.", len(p.Colors))
 		}
 		return material.NewSolidPattern(p.Colors[0].toColor()), nil
-	case GRADIENT:
+	case gradient:
 		if len(p.Colors) != 2 {
 			return material.Pattern{}, fmt.Errorf("Gradient pattern requires exactly two parameters. Have %d parameters.", len(p.Colors))
 		}
 		return material.NewGradientPattern(p.Colors[0].toColor(), p.Colors[1].toColor()), nil
-	case RING:
+	case ring:
 		if len(p.Colors) != 2 {
 			return material.Pattern{}, fmt.Errorf("Ring pattern requires exactly two parameters. Have %d parameters.", len(p.Colors))
 		}
 		return material.NewRingPattern(p.Colors[0].toColor(), p.Colors[1].toColor()), nil
-	case CHECKERS:
+	case checkers:
 		if len(p.Colors) != 2 {
 			return material.Pattern{}, fmt.Errorf("Checkers pattern requires exactly two parameters. Have %d parameters.", len(p.Colors))
 		}
@@ -394,37 +394,37 @@ type transform struct {
 
 func (t transform) toMatrix() (matrix.Matrix, error) {
 	switch t.Type {
-	case TRANSLATE:
+	case translate:
 		if len(t.Params) != 3 {
 			return nil, fmt.Errorf("Translate transform requires (x,y,z) parameters. Have %d params instead.", len(t.Params))
 		}
 		return matrix.NewTranslation(t.Params[0], t.Params[1], t.Params[2]), nil
-	case IDENTITY:
+	case identity:
 		if len(t.Params) != 0 {
 			return nil, fmt.Errorf("Identity transform should not have parameters. Have %d params instead.", len(t.Params))
 		}
 		return matrix.NewIdentity(), nil
-	case SCALE:
+	case scale:
 		if len(t.Params) != 3 {
 			return nil, fmt.Errorf("Scale transform requires (x,y,z) parameters. Have %d params instead.", len(t.Params))
 		}
 		return matrix.NewScale(t.Params[0], t.Params[1], t.Params[2]), nil
-	case ROTATEX:
+	case rotatex:
 		if len(t.Params) != 1 {
 			return nil, fmt.Errorf("RotateX transform requires (radians) parameters. Have %d params instead.", len(t.Params))
 		}
 		return matrix.NewRotateX(t.Params[0]), nil
-	case ROTATEY:
+	case rotatey:
 		if len(t.Params) != 1 {
 			return nil, fmt.Errorf("RotateY transform requires (radians) parameters. Have %d params instead.", len(t.Params))
 		}
 		return matrix.NewRotateY(t.Params[0]), nil
-	case ROTATEZ:
+	case rotatez:
 		if len(t.Params) != 1 {
 			return nil, fmt.Errorf("RotateZ transform requires (radians) parameters. Have %d params instead.", len(t.Params))
 		}
 		return matrix.NewRotateZ(t.Params[0]), nil
-	case SHEAR:
+	case shear:
 		if len(t.Params) != 6 {
 			return nil, fmt.Errorf("Shear transform requires (xy, xz, yx, yz, zx, zy) parameters. Have %d params instead.", len(t.Params))
 		}
