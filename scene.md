@@ -11,7 +11,7 @@ fixtures: # can have any number of lights
 materials: # A material dictionary that can be used in objects below
 - name:   # name of the material
   preset: # Any item in the material cache that appears above this item, or "glass" or "default"
-  pattern: solid | gradient | rings | checker
+  pattern: solid | gradient | ring | checker
   transform: # optional section, defaults to identity
   - type : identity | translate | scale | rotatex | rotatey | rotatez | shear
     params: # an array of floats that matches the transform type
