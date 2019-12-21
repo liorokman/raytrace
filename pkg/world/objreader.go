@@ -73,12 +73,13 @@ func (o *objReader) ReadObj(filename string) error {
 	currentGroup := "defaultGroup"
 	scan := bufio.NewScanner(in)
 	for scan.Scan() {
-		line := scan.Text()
-		line = strings.TrimSpace(line)
-		if line == "" || line[0] == '#' {
+		line := strings.TrimSpace(scan.Text())
+		if ind := strings.Index(line, "#"); ind >= 0 {
+			line = line[0:ind]
+		}
+		if line == "" {
 			continue
 		}
-		// TODO: remove comments from after the first position
 		parts := strings.Split(line, " ")
 		switch parts[0] {
 		case vertex:
