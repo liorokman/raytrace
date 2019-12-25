@@ -30,6 +30,7 @@ const (
 	cone     = "cone"
 	group    = "group"
 	triangle = "triangle"
+	csg      = "csg"
 
 	// patterns
 	solid    = "solid"
@@ -48,6 +49,11 @@ const (
 
 	// fixtures
 	POINTLIGHT = "pointlight"
+
+	// csg operations
+	unionop      = "union"
+	intersectop  = "intersect"
+	differenceop = "difference"
 )
 
 type Cam struct {
@@ -159,6 +165,51 @@ func newShape(sType string, params map[string]interface{}, cache map[string]mate
 		}
 		return shapes.NewTriangle(p1.ToPoint(), p2.ToPoint(), p3.ToPoint()), nil
 
+	case csg:
+		var left, right shapes.Shape
+		var csgop shapes.CSGOp
+		var err error
+		if val, ok := params["left"]; ok {
+			asYaml, _ := yaml.Marshal(val)
+			var content object = object{}
+			if err := yaml.Unmarshal(asYaml, &content); err != nil {
+				return nil, err
+			}
+			left, err = translater(content, cache)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			return nil, fmt.Errorf("A CSG must have a 'left' object")
+		}
+		if val, ok := params["right"]; ok {
+			asYaml, _ := yaml.Marshal(val)
+			var content object = object{}
+			if err := yaml.Unmarshal(asYaml, &content); err != nil {
+				return nil, err
+			}
+			right, err = translater(content, cache)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			return nil, fmt.Errorf("A CSG must have a 'right' object")
+		}
+		if op, ok := params["operation"]; ok {
+			switch op {
+			case unionop:
+				csgop = shapes.UnionOp
+			case differenceop:
+				csgop = shapes.DifferenceOp
+			case intersectop:
+				csgop = shapes.IntersectOp
+			default:
+				return nil, fmt.Errorf("Unsupported operation %s", op)
+			}
+		} else {
+			return nil, fmt.Errorf("A CSG must have an 'operation'")
+		}
+		return shapes.NewCSG(&left, &right, csgop), nil
 	case group:
 		g := shapes.NewGroup()
 		if val, ok := params["content"]; ok {

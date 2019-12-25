@@ -37,7 +37,7 @@ camera:
   to: [x, y, z] # floats, where the camera is aimed at
   up: [x, y, z] # floats, vector starting at the camera and pointing to the cameras up
 objects:
-- type: sphere | plane | cube | cylinder | cone | triangle | group
+- type: sphere | plane | cube | cylinder | cone | triangle | group | csg
   params: # as per the type of the object
           # sphere, plane, cube - no parameters
           # cylinder, cone:  "minimum", "maximum" - floats for cutoff on the Y axis, "closed" - boolean for capping the shape
@@ -45,6 +45,8 @@ objects:
           # group: Either:
           #     "objfile" - string pointing to a Wavefront OBJ file location (relative to the CWD)
           #     "content" - exactly the same as the top-level "objects" section
+          # csg: left, right - exactly the same as a top-level "object"
+          #      operation - union | intersect | difference
   transform: # optional section, defaults to identity
   - type : identity | translate | scale | rotatex | rotatey | rotatez | shear
     params: # an array of floats that matches the transform type
